@@ -28,6 +28,7 @@ class TripletsGenerator():
         np.random.shuffle(names)
         self.cnt = 0
         for name in names:
+            print('prepare triplet pid ', name)
             clusters = self.clusters_dict[name]
             index2pid = self.pid_index[name]
             for cluster in clusters:
@@ -49,7 +50,7 @@ class TripletsGenerator():
 
 if __name__ == '__main__':
     TG = TripletsGenerator()
-    TG.prepare_triplet_pid(max_num=10000)
+    TG.prepare_triplet_pid(max_num=500000)
 
 
 
