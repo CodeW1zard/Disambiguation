@@ -15,9 +15,12 @@ if __name__ == '__main__':
     #     if i<100:
     #         print(k, v)
 
-    cl = LMDBClient(LMDB_WORDVEC)
-    with cl.db.begin() as txn:
-        for i, f in enumerate(txn.cursor()):
-            if i>2:
-                continue
-            print(f[0], deserialize_embedding(f[1]))
+    # cl = LMDBClient(LMDB_WORDVEC)
+    # with cl.db.begin() as txn:
+    #     for i, f in enumerate(txn.cursor()):
+    #         if i>2:
+    #             continue
+    #         print(f[0], deserialize_embedding(f[1]))
+
+    tri = load_data(TRIPLET_INDEX)
+    print(tri)
