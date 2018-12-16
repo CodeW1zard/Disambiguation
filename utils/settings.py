@@ -1,13 +1,10 @@
 import os
-from os.path import abspath, dirname, join, pardir
+from os.path import abspath, dirname, join
 ###########################
 SUFFIX = 'validate'
 ###########################
 
-PROJ_DIR = abspath(join(dirname('__file__'), pardir))
-# PROJ_DIR = 'E:\\MyRepo\\Projects\\Disambiguation'
-# PROJ_DIR = abspath('../')
-# PROJ_DIR = join(abspath(dirname(__file__)), '..')
+PROJ_DIR = join(abspath(dirname(__file__)), '..')
 
 OUT_DIR = join(PROJ_DIR, 'out')
 DATA_DIR = join(PROJ_DIR, 'data')
