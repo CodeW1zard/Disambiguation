@@ -1,8 +1,12 @@
 import pandas as pd
 import numpy as np
+
+from Graph.Graph import Graph
+from Graph.Algorithms import Connectivity
+
 from itertools import combinations
 from utils.settings import *
-from utils.data_utils import deserialize_embedding, load_data, dump_data
+from utils.data_utils import *
 from utils.lmdb_utils import LMDBClient
 from utils.string_utils import clean_name
 def match_author(x_list, y_list, name):
@@ -53,13 +57,27 @@ def find_idf_pos_pairs(pub, idf, thresh=0.35):
         pairs = np.asarray(np.where(corr > thresh)).transpose()
     return pairs
 
+def prepare_clusters(wfpath):
+    pos_pairs = load_data(BASIC_NET)
+    pubs = load_json(PUBS_JSON)
+    components = {}
+    for name, pairs in pos_pairs.items():
+        num_papers = len(pubs[name])
+        G = Graph()
+        G.add_nodes_from(range(num_papers))
+        G.add_edges_from(pairs)
+        C = Connectivity()
+        components[name] = C.connected_components(G)
+    dump_data(components, wfpath)
+
+
 def prepare_pos_pairs(wfpath):
     pid_index_dict = load_data(PID_INDEX)
     pos_pairs = load_data(BASIC_NET)
     with open(wfpath, 'w') as f:
         for name, pairs in pos_pairs.items():
             pid_index = pid_index_dict[name]
-            for i, j in pos_pairs:
+            for i, j in pairs:
                 f.write(pid_index[i], '\s', pid_index[j], '\n')
             print('prepare_pos_pairs', name, 'done')
 
@@ -73,3 +91,4 @@ if __name__ == '__main__':
         print(name, 'done')
     dump_data(pairs, BASIC_NET)
     prepare_pos_pairs(POS_PAIRS)
+    prepare_clusters(BASIC_CLUSTER)
