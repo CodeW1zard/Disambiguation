@@ -66,8 +66,9 @@ def prepare_clusters(wfpath):
         G = Graph()
         G.add_nodes_from(range(num_papers))
         G.add_edges_from(pairs)
-        C = Connectivity()
-        components[name] = C.connected_components(G)
+        C = Connectivity(G)
+        components[name] = [compo for _, compo in C.connected_components().items()]
+        print('prepare clusters', name, 'done')
     dump_data(components, wfpath)
 
 
@@ -78,17 +79,17 @@ def prepare_pos_pairs(wfpath):
         for name, pairs in pos_pairs.items():
             pid_index = pid_index_dict[name]
             for i, j in pairs:
-                f.write(pid_index[i], '\s', pid_index[j], '\n')
+                f.write(pid_index[i] + '\t' + pid_index[j] + '\n')
             print('prepare_pos_pairs', name, 'done')
 
 if __name__ == '__main__':
-    idf = load_data(WORD_IDF)
-    pubs = pd.read_parquet(PUBS_PARQUET)
-    pubs = dict(list(pubs.groupby('name')))
-    pairs = {}
-    for name, pub in pubs.items():
-        pairs[name] = find_idf_pos_pairs(pub, idf)
-        print(name, 'done')
-    dump_data(pairs, BASIC_NET)
-    prepare_pos_pairs(POS_PAIRS)
+#    idf = load_data(WORD_IDF)
+#    pubs = pd.read_parquet(PUBS_PARQUET)
+#    pubs = dict(list(pubs.groupby('name')))
+#    pairs = {}
+#    for name, pub in pubs.items():
+#        pairs[name] = find_idf_pos_pairs(pub, idf)
+#        print(name, 'done')
+#    dump_data(pairs, BASIC_NET)
+#    prepare_pos_pairs(POS_PAIRS)
     prepare_clusters(BASIC_CLUSTER)
