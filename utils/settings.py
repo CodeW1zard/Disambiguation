@@ -4,8 +4,11 @@ from os.path import abspath, dirname, join, pardir
 SUFFIX = 'validate'
 ###########################
 
-PROJ_DIR = abspath(join(dirname('__file__'), pardir))
+# PROJ_DIR = abspath(join(dirname('__file__'), pardir))
 # PROJ_DIR = 'E:\\MyRepo\\Projects\\Disambiguation'
+# PROJ_DIR = abspath('../')
+PROJ_DIR = join(abspath(dirname(__file__)), '..')
+
 OUT_DIR = join(PROJ_DIR, 'out')
 DATA_DIR = join(PROJ_DIR, 'data')
 EMB_DATA_DIR = join(DATA_DIR, 'emb')
