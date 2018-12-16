@@ -1,0 +1,8 @@
+data/emb/
+data/global/
+data/lmdb/
+.idea/
+.ipynb_checkpoints/
+*.ipynb
+
+utils/__pycache__/
