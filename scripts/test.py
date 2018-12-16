@@ -10,7 +10,14 @@ if __name__ == '__main__':
     #     f = deserialize_embedding(txn.get(pubs.iloc[0].id.encode()))
     #     print(f)
 
-    idf = load_data(WORD_IDF)
-    for i, (k, v) in enumerate(idf.items()):
-        if i<100:
-            print(k, v)
+    # idf = load_data(WORD_IDF)
+    # for i, (k, v) in enumerate(idf.items()):
+    #     if i<100:
+    #         print(k, v)
+
+    cl = LMDBClient(LMDB_WORDVEC)
+    with cl.db.begin() as txn:
+        for i, f in enumerate(txn.cursor()):
+            if i>2:
+                continue
+            print(f[0], deserialize_embedding(f[1]))

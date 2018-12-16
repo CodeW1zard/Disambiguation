@@ -39,11 +39,29 @@ def find_idf_pos_pairs(pub, idf, thresh=0.35):
             papers_idf[i] = sum([idf[word] for word in papers[i] if word!=name])
 
         for i, j in combinations(range(num_paper), 2):
+            num_word1 = len(papers[i])
+            num_word2 = len(papers[j])
+
+            if num_word1 > num_word2:
+                i, j = j, i
+            if min([num_word1, num_word2]) > 1000:
+                continue
+
             idf12 = sum([idf[word] for word in papers[i] if word in papers[j] and word!=name])
             corr[i, j] = idf12/np.min([papers_idf[i], papers_idf[j]])
         
         pairs = np.asarray(np.where(corr > thresh)).transpose()
     return pairs
+
+def prepare_pos_pairs(wfpath):
+    pid_index_dict = load_data(PID_INDEX)
+    pos_pairs = load_data(BASIC_NET)
+    with open(wfpath, 'w') as f:
+        for name, pairs in pos_pairs.items():
+            pid_index = pid_index_dict[name]
+            for i, j in pos_pairs:
+                f.write(pid_index[i], '\s', pid_index[j], '\n')
+            print('prepare_pos_pairs', name, 'done')
 
 if __name__ == '__main__':
     idf = load_data(WORD_IDF)
@@ -54,3 +72,4 @@ if __name__ == '__main__':
         pairs[name] = find_idf_pos_pairs(pub, idf)
         print(name, 'done')
     dump_data(pairs, BASIC_NET)
+    prepare_pos_pairs(POS_PAIRS)

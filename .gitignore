@@ -6,3 +6,4 @@ data/lmdb/
 *.ipynb
 
 utils/__pycache__/
+scripts/test.py
