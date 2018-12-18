@@ -25,12 +25,15 @@ BASIC_NET = join(GLOBAL_DATA_DIR, 'basic_net_' + SUFFIX + '.pkl')
 POS_PAIRS = join(GLOBAL_DATA_DIR, 'pos_pairs_' + SUFFIX + '.txt')
 BASIC_CLUSTER = join(GLOBAL_DATA_DIR, 'basic_clusters_' + SUFFIX + '.pkl')
 TRIPLET_INDEX = join(GLOBAL_DATA_DIR, 'triplet_index_' + SUFFIX + '.pkl')
-
+GLOBAL_MODEL = join(EMB_DATA_DIR, 'global_mode_' + SUFFIX + '.pkl')
 
 
 LMDB_AUTHOR = 'pub_authors_' + SUFFIX + '.feature'
 LMDB_WORDVEC = 'pub_vectors_' + SUFFIX + '.feature'
+LMDB_GLOBALVEC = 'pub_globalvec_' + SUFFIX + '.feature'
 EMB_DIM = 100
+
+
 
 
 
