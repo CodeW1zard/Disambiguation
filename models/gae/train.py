@@ -19,7 +19,6 @@ from models.gae.model import GCNModelAE, GCNModelVAE
 from models.gae.preprocessing import preprocess_graph, construct_feed_dict, \
     sparse_to_tuple, normalize_vectors, gen_train_edges, cal_pos_weight
 from utils.cluster import clustering
-from utils.data_utils import load_json
 from utils.eval_utils import pairwise_precision_recall_f1, cal_f1
 from utils import settings
 
@@ -34,7 +33,7 @@ flags.DEFINE_float('weight_decay', 0., 'Weight for L2 loss on embedding matrix.'
 flags.DEFINE_float('dropout', 0., 'Dropout rate (1 - keep probability).')
 
 flags.DEFINE_string('model', 'gcn_vae', 'Model string.')
-flags.DEFINE_string('name', 'hui_fang', 'Dataset string.')
+flags.DEFINE_string('name', 'bing_chen', 'Dataset string.')
 # flags.DEFINE_integer('features', 1, 'Whether to use features (1) or not (0).')
 flags.DEFINE_integer('is_sparse', 0, 'Whether input features are sparse.')
 

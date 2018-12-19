@@ -10,6 +10,8 @@ def gen_local_data(idf_threshold=settings.IDF_THRESH):
     generate local data (including paper features and paper network) for each associated name
     :param idf_threshold: threshold for determining whether there exists an edge between two papers (for this demo we set 29)
     """
+    # 这里一应该读入ASSIGNMENT_JSON 但由于竞赛方给的数据缺失，所以只好采用聚类结构BASIC_CLUSTER
+    # name_to_pubs_test = data_utils.load_json(settings.ASSIGNMENT_JSON)
     name_to_pubs_test = data_utils.load_data(settings.BASIC_CLUSTER)
     pid_dict = data_utils.load_data(settings.PID_INDEX)
     lc_inter = LMDBClient(settings.LMDB_GLOBALVEC)
@@ -30,6 +32,9 @@ def gen_local_data(idf_threshold=settings.IDF_THRESH):
             for index in items:
                 pids2label[pid_index[index]] = aid
                 pids.append(pid_index[index])
+            # for pid in items:
+            #     pids2label[pid] = aid
+            #     pids.append(pid)
         shuffle(pids)
         for pid in pids:
             cur_pub_emb = lc_inter.get(pid)

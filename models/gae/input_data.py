@@ -24,8 +24,8 @@ def load_local_data(path=local_na_dir, name='ke_xu'):
     idx = np.array(idx_features_labels[:, 0], dtype=np.str)
     idx_map = {j: i for i, j in enumerate(idx)}
     edges_unordered = np.genfromtxt(join(path, "{}_pubs_network.txt".format(name)), dtype=np.dtype(str))
-    edges = np.array(list(map(idx_map.get, edges_unordered.flatten())),
-                     dtype=np.int32).reshape(edges_unordered.shape)
+    edges = list(map(idx_map.get, edges_unordered.flatten()))
+    edges = np.array(edges, dtype=np.int32).reshape(edges_unordered.shape)
     adj = sp.coo_matrix((np.ones(edges.shape[0]), (edges[:, 0], edges[:, 1])),
                         shape=(features.shape[0], features.shape[0]), dtype=np.float32)
 
@@ -35,7 +35,6 @@ def load_local_data(path=local_na_dir, name='ke_xu'):
     print('Dataset has {} nodes, {} edges, {} features.'.format(adj.shape[0], edges.shape[0], features.shape[1]))
 
     return adj, features, labels
-
 
 if __name__ == '__main__':
     adj, features, labels = load_local_data(name='bing_chen')
