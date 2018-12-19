@@ -29,6 +29,7 @@ GLOBAL_MODEL = join(OUT_DIR, 'global_model_' + SUFFIX + '.h5')
 
 ASSIGNMENT_JSON = join(GLOBAL_DATA_DIR, 'assignment_' + SUFFIX + '.json')
 TEST_NAME_LIST = join(DATA_DIR, 'test_name_list_' + SUFFIX + '.txt')
+CLUSTER_SIZE = join(OUT_DIR, 'n_clusters_rnn_' + SUFFIX + '.txt')
 
 LMDB_AUTHOR = 'pub_authors_' + SUFFIX + '.feature'
 LMDB_WORDVEC = 'pub_vectors_' + SUFFIX + '.feature'
