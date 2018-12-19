@@ -16,21 +16,21 @@ class TripletModel():
         n_triplets = len(X1)
         n_train = int(n_triplets * train_prop)
 
-        model, inter_model = self.create_triplet_model()
+        self.model, self.inter_model = self.create_triplet_model()
 
         X_anchor, X_pos, X_neg = X1[:n_train], X2[:n_train], X3[:n_train]
         X = {'anchor_input': X_anchor, 'pos_input': X_pos, 'neg_input': X_neg}
-        model.fit(X, np.ones((n_train, 2)), batch_size=64, epochs=5, shuffle=True, validation_split=0.2)
-        model.save(GLOBAL_MODEL)
+        self.model.fit(X, np.ones((n_train, 2)), batch_size=64, epochs=5, shuffle=True, validation_split=0.2)
+        self.model.save(GLOBAL_MODEL)
 
         test_triplets = (X1[n_train:], X2[n_train:], X3[n_train:])
-        eval_utils.full_auc(model, test_triplets)
+        eval_utils.full_auc(self.model, test_triplets)
 
-        loaded_model = load_model(GLOBAL_MODEL)
-        print('triplets model loaded')
-
-        auc_score = eval_utils.full_auc(loaded_model, test_triplets)
-        print('auc ', auc_score)
+        # loaded_model = load_model(GLOBAL_MODEL)
+        # print('triplets model loaded')
+        #
+        # auc_score = eval_utils.full_auc(loaded_model, test_triplets)
+        # print('auc ', auc_score)
 
     def create_triplet_model(self):
         emb_anchor = Input(shape=(EMB_DIM, ), name='anchor_input')
@@ -104,6 +104,21 @@ class TripletModel():
         negs = np.array(negs)[rnds]
         print(poss.shape)
         return anchors, poss, negs
+
+    def generate_global_emb(self):
+        wv_cl = LMDBClient(LMDB_WORDVEC)
+        gb_cl = LMDBClient(LMDB_GLOBALVEC)
+        values = []
+        pids = []
+        with wv_cl.db.begin() as txn:
+            for pid, value in txn.cursor():
+                pids.append(pid.decode())
+                values.append(deserialize_embedding(value))
+        values = np.stack(values)
+        inter_embs = eval_utils.get_hidden_output(self.model, values)
+        for i, pid in enumerate(pids):
+            gb_cl.set(pid, inter_embs[i])
+        print('generate global emb done!')
 
 class CustomDataset():
     def __init__(self):

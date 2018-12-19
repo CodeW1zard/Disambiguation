@@ -68,12 +68,10 @@ def get_hidden_output(model, inp):
     activations = get_activations([inp, 0])
     return activations[0]
 
-
 def predict(anchor_emb, test_embs):
     score1 = np.linalg.norm(anchor_emb-test_embs[0])
     score2 = np.linalg.norm(anchor_emb-test_embs[1])
     return [score1, score2]
-
 
 def full_auc(model, test_triplets):
     """
