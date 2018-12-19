@@ -53,7 +53,7 @@ class TripletsGenerator():
 
 if __name__ == '__main__':
     TG = TripletsGenerator()
-    TG.prepare_triplet_pid(max_num=100000)
+    TG.prepare_triplet_pid(max_num=500000)
 
 
 
