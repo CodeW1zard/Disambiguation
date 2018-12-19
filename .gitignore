@@ -1,6 +1,4 @@
-data/emb/
-data/global/
-data/lmdb/
+data/
 .idea/
 .ipynb_checkpoints/
 *.ipynb

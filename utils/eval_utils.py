@@ -1,13 +1,14 @@
 import numpy as np
 from keras import backend as K
+from scipy import sparse as sp
 from sklearn.metrics import roc_auc_score
 
 
-def pairwise_precision_recall_f1(preds, truths, sparse=False):
-    labels_true, labels_pred = check_clusterings(labels_true, labels_pred)
+def pairwise_precision_recall_f1(preds, truths, sparse=True):
+    labels_true, labels_pred = check_clusterings(truths, preds)
     n_samples, = labels_true.shape
 
-    c = contingency_matrix(labels_true, labels_pred, sparse=True)
+    c = contingency_matrix(labels_true, labels_pred, sparse=sparse)
     tk = np.dot(c.data, c.data) - n_samples
     pk = np.sum(np.asarray(c.sum(axis=0)).ravel() ** 2) - n_samples
     qk = np.sum(np.asarray(c.sum(axis=1)).ravel() ** 2) - n_samples

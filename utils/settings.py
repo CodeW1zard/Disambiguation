@@ -27,11 +27,14 @@ BASIC_CLUSTER = join(GLOBAL_DATA_DIR, 'basic_clusters_' + SUFFIX + '.pkl')
 TRIPLET_INDEX = join(GLOBAL_DATA_DIR, 'triplet_index_' + SUFFIX + '.pkl')
 GLOBAL_MODEL = join(OUT_DIR, 'global_model_' + SUFFIX + '.h5')
 
+ASSIGNMENT_JSON = join(GLOBAL_DATA_DIR, 'assignment_' + SUFFIX + '.json')
+TEST_NAME_LIST = join(DATA_DIR, 'test_name_list_' + SUFFIX + '.txt')
 
 LMDB_AUTHOR = 'pub_authors_' + SUFFIX + '.feature'
 LMDB_WORDVEC = 'pub_vectors_' + SUFFIX + '.feature'
 LMDB_GLOBALVEC = 'pub_globalvec_' + SUFFIX + '.feature'
 EMB_DIM = 100
+IDF_THRESH = 0.35
 
 
 
