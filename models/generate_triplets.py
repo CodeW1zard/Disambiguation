@@ -36,7 +36,7 @@ class TripletsGenerator():
                 if len(cluster) == 1:
                     continue
                 num_to_generate = max([6, 0.1 * len(cluster)])
-                num_to_generate = min([int(num_to_generate), 50, len(cluster)])
+                num_to_generate = min([int(num_to_generate), 80, len(cluster)])
                 for anchor in cluster:
                     pos = np.random.choice(cluster, num_to_generate, replace=False)
                     neg = self.get_neg_pairs(num_to_generate, excluded_pids)
@@ -46,7 +46,7 @@ class TripletsGenerator():
                     if self.cnt > max_num:
                         dump_data(self.triplets, TRIPLET_INDEX)
                         return
-
+            print(self.cnt)
 
 if __name__ == '__main__':
     TG = TripletsGenerator()
