@@ -48,6 +48,8 @@ class TripletsGenerator():
                         dump_data(self.triplets, TRIPLET_INDEX)
                         return
             print(self.cnt)
+        dump_data(self.triplets, TRIPLET_INDEX)
+
 
 if __name__ == '__main__':
     TG = TripletsGenerator()
