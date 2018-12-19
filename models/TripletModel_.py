@@ -10,60 +10,50 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 TRIPLET_LAYER_SIZE1 = 128
 TRIPLET_LAYER_SIZE2 = 64
-
+BATCH_SIZE = 4
 class TripletModel():
-    def __init__(self, margin):
-        self.margin = torch.tensor(margin).to(device)
-        self.__zero = torch.tensor(0.).to(device).double()
+    def __init__(self):
+        self.__zero = torch.zeros(BATCH_SIZE).to(device).long()
+        self.__one = torch.ones(BATCH_SIZE).to(device).long()
 
-    def criterion(self, anchor, pos, neg):
-
-        dist1 = torch.mean(torch.sqrt(torch.sum((anchor - pos) ** 2, 1)))
-        dist2 = torch.mean(torch.sqrt(torch.sum((anchor - neg) ** 2, 1)))
-        loss = torch.max(dist1 - dist2 + self.margin, self.__zero)
-        return loss
+    def scale(self, tensor):
+        mean = torch.mean(tensor, dim=1, keepdim=True)
+        std = torch.std(tensor, dim=1, keepdim=True)
+        return (tensor-mean).div(std)
 
     def train(self, num_epoch=1, learning_rate=1e-3):
         train_dataset = CustomDataset()
         train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
-                                                   batch_size=4,
+                                                   batch_size=BATCH_SIZE,
                                                    shuffle=True)
         self.model = NeuralNet().to(device).double()
         optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
+        criterion = nn.CrossEntropyLoss()
 
-        dists1 = []
-        dists2 = []
         losses = []
         for epoch in range(num_epoch):
             for i, triplet in enumerate(train_loader):
                 anchor, pos, neg = triplet
-                encode_anchor = self.model(anchor.to(device))
-                encode_pos = self.model(pos.to(device))
-                encode_neg = self.model(neg.to(device))
 
+                anchor = self.scale(anchor)
+                pos = self.scale(pos)
+                neg = self.scale(neg)
 
-                loss = self.criterion(encode_anchor, encode_pos, encode_neg)
+                anchor_pos, anchor_neg = \
+                    self.model(anchor.to(device), pos.to(device), neg.to(device))
+
+                loss = criterion(anchor_pos, self.__one) + (criterion(anchor_neg, self.__zero))
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
-
-                dist1 = torch.mean(torch.sum((encode_anchor - encode_pos) ** 2, 1)).item()
-                dist2 = torch.mean(torch.sum((encode_anchor - encode_neg) ** 2, 1)).item()
-                dists1.append(dist1)
-                dists2.append(dist2)
                 losses.append(loss.item())
+
                 if not (i+1)%1000:
                     print('Epoch [{}/{}], Step {}, Loss: {:.4f}'
                           .format(epoch + 1, num_epoch, i + 1, loss.item()))
-                if not loss:
-                    plt.subplot(121)
-                    plt.plot(dists1)
-                    plt.plot(dists2)
-
-                    plt.subplot(122)
-                    plt.plot(losses)
-                    plt.show()
-                    return
+        plt.plot(losses)
+        plt.show()
+        return
 
 
 
@@ -82,22 +72,29 @@ class TripletModel():
                 gb_cl.set(pid, emb)
         print('generate global emb done!')
 
+    def load(self):
+        self.model = load_data(GLOBAL_MODEL)
+
     def evaluate(self):
         train_dataset = CustomDataset()
         train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
-                                                   batch_size=1,
+                                                   batch_size=BATCH_SIZE,
                                                    shuffle=True)
         dists_before = []
         dists_after = []
         for i, triplet in enumerate(train_loader):
             anchor, pos, neg = triplet
-            dist1 = torch.mean(torch.sum((anchor - pos)**2, 1))
-            dist2 = torch.mean(torch.sum((anchor - neg)**2, 1))
-            dists_before.append([dist1.detach().numpy(), dist2.detach().numpy()])
+            anchor = self.scale(anchor)
+            pos = self.scale(pos)
+            neg = self.scale(neg)
 
-            encode_anchor = self.model(anchor.to(device))
-            encode_pos = self.model(pos.to(device))
-            encode_neg = self.model(neg.to(device))
+            distance1 = torch.mean(torch.sum((anchor - pos)**2, 1))
+            distance2 = torch.mean(torch.sum((anchor - neg)**2, 1))
+            dists_before.append([distance1.detach().cpu().numpy(), distance2.detach().cpu().numpy()])
+
+            encode_anchor = self.model.layer(anchor.to(device))
+            encode_pos = self.model.layer(pos.to(device))
+            encode_neg = self.model.layer(neg.to(device))
 
             distance1 = torch.mean(torch.sum((encode_anchor - encode_pos)**2, 1))
             distance2 = torch.mean(torch.sum((encode_anchor - encode_neg)**2, 1))
@@ -120,24 +117,30 @@ class TripletModel():
         plt.hist(dists_after[:, 0] - dists_after[:, 1])
         plt.show()
 
-
 class NeuralNet(nn.Module):
     def __init__(self):
         super(NeuralNet, self).__init__()
-        self.layer1 = nn.Sequential(
+        self.layer = nn.Sequential(
             nn.Linear(EMB_DIM, TRIPLET_LAYER_SIZE1),
-            nn.ReLU())
-        self.layer2 = nn.Sequential(
+            nn.ReLU(),
             nn.Linear(TRIPLET_LAYER_SIZE1, TRIPLET_LAYER_SIZE2),
             nn.ReLU())
+        self.fc = nn.Sequential(
+            nn.Linear(TRIPLET_LAYER_SIZE2, 2),
+            nn.Sigmoid())
 
-    def forward(self, x):
-        out = self.layer1(x)
-        out = self.layer2(out)
-        norm = torch.norm(out, dim=1, keepdim=True)
-        out = out.div(norm)
-        return out
-
+    def forward(self, anchor, pos, neg):
+        out_anchor = self.layer(pos)
+        out_pos = self.layer(pos)
+        out_neg = self.layer(neg)
+        # out_anchor = out_anchor.div(torch.norm(out_anchor, dim=1, keepdim=True))
+        # out_pos = out_pos.div(torch.norm(out_pos, dim=1, keepdim=True))
+        # out_neg = out_neg.div(torch.norm(out_neg, dim=1, keepdim=True))
+        anchor_pos = out_anchor - out_pos
+        anchor_neg = out_anchor - out_neg
+        out_anchor_pos = self.fc(anchor_pos)
+        out_anchor_neg = self.fc(anchor_neg)
+        return out_anchor_pos, out_anchor_neg
 
 class CustomDataset(torch.utils.data.Dataset):
     def __init__(self):
@@ -154,7 +157,8 @@ class CustomDataset(torch.utils.data.Dataset):
         return len(self.triplets)
 
 if __name__=='__main__':
-    model = TripletModel(margin=10)
-    model.train()
+    model = TripletModel()
+    # model.train(num_epoch=10)
     # model.save()
-    # model.evaluate()
+    model.load()
+    model.evaluate()
