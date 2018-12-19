@@ -47,6 +47,7 @@ class TripletsGenerator():
                     if self.cnt > max_num:
                         dump_data(self.triplets, TRIPLET_INDEX)
                         return
+        dump_data(self.triplets, TRIPLET_INDEX)
 
 
 if __name__ == '__main__':
