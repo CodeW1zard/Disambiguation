@@ -11,7 +11,7 @@ import numpy as np
 
 class TripletModel():
 
-    def train_triplets_model(self, train_prop=0.8):
+    def train_triplets_model(self, train_prop=0.8, generate=False):
         X1, X2, X3 = self.retrieve_data()
         n_triplets = len(X1)
         n_train = int(n_triplets * train_prop)
@@ -25,6 +25,9 @@ class TripletModel():
 
         test_triplets = (X1[n_train:], X2[n_train:], X3[n_train:])
         eval_utils.full_auc(self.model, test_triplets)
+
+        if generate:
+            self.generate_global_emb()
 
         # loaded_model = load_model(GLOBAL_MODEL)
         # print('triplets model loaded')
@@ -136,4 +139,4 @@ class CustomDataset():
 
 if __name__=='__main__':
     model = TripletModel()
-    model.train_triplets_model()
+    model.train_triplets_model(generate=True)
