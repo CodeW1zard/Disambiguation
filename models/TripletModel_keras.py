@@ -120,7 +120,7 @@ class TripletModel():
             for pid, value in txn.cursor():
                 pids.append(pid.decode())
                 value = deserialize_embedding(value)
-                if np.isnan(value):
+                if np.isnan(value).any():
                     nan_pids.append(pid)
                     continue
                 values.append(value)
