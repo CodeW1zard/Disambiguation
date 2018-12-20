@@ -27,11 +27,10 @@ class TripletsGenerator():
         names = list(self.clusters_dict.keys())
         np.random.shuffle(names)
         self.cnt = 0
-        for name in names:
-            print('prepare triplet pid ', name)
+        for i, name in enumerate(names):
+            print('prepare triplet pid ', i, name)
             clusters = self.clusters_dict[name]
             index2pid = self.pid_index[name]
-            print(len(self.triplets))
             for cluster in clusters:
                 excluded_pids = [index2pid[index] for index in cluster]
                 if len(cluster) == 1:
