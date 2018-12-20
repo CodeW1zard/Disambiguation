@@ -118,11 +118,11 @@ class TripletModel():
         pids = []
         with wv_cl.db.begin() as txn:
             for pid, value in txn.cursor():
-                pids.append(pid.decode())
                 value = deserialize_embedding(value)
                 if np.isnan(value).any():
                     nan_pids.append(pid)
                     continue
+                pids.append(pid.decode())
                 values.append(value)
         values = np.stack(values)
         inter_embs = eval_utils.get_hidden_output(self.model, values)
