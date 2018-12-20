@@ -83,13 +83,13 @@ def prepare_pos_pairs(wfpath):
             print('prepare_pos_pairs', name, 'done')
 
 if __name__ == '__main__':
-    # idf = load_data(WORD_IDF)
-    # pubs = pd.read_parquet(PUBS_PARQUET)
-    # pubs = dict(list(pubs.groupby('name')))
-    # pairs = {}
-    # for name, pub in pubs.items():
-    #     pairs[name] = find_idf_pos_pairs(pub, idf)
-    #     print(name, 'done')
-    # dump_data(pairs, BASIC_NET)
+    idf = load_data(WORD_IDF)
+    pubs = pd.read_parquet(PUBS_PARQUET)
+    pubs = dict(list(pubs.groupby('name')))
+    pairs = {}
+    for name, pub in pubs.items():
+        pairs[name] = find_idf_pos_pairs(pub, idf)
+        print(name, 'done')
+    dump_data(pairs, BASIC_NET)
     prepare_pos_pairs(POS_PAIRS)
     prepare_clusters(BASIC_CLUSTER)

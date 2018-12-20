@@ -96,8 +96,10 @@ class TripletModel():
         anchors = []
         poss = []
         negs = []
-        for i in range(len(dataset)):
-            anchor, pos, neg = dataset[i]
+        for data in dataset:
+            anchor, pos, neg = data
+            if np.isnan(anchor).any() or np.isnan(anchor).any() or np.isnan(anchor).any():
+                continue
             anchors.append(anchor)
             poss.append(pos)
             negs.append(neg)

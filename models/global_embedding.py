@@ -46,10 +46,9 @@ class EmbeddingModel():
 
 
 if __name__ == '__main__':
-    EmbeddingModel().train(EMB_WORD2VEC, size=EMB_DIM)
     idf_calc()
     model = EmbeddingModel()
-    model.load(EMB_WORD2VEC)
+    model.train(EMB_WORD2VEC, size=EMB_DIM)
     model.paper2vec()
 
 
