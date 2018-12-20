@@ -21,6 +21,7 @@ from models.gae.preprocessing import preprocess_graph, construct_feed_dict, \
 from utils.cluster import clustering
 from utils.eval_utils import pairwise_precision_recall_f1, cal_f1
 from utils import settings
+from utils import lmdb_utils
 
 # Settings
 flags = tf.app.flags
@@ -40,7 +41,8 @@ flags.DEFINE_integer('is_sparse', 0, 'Whether input features are sparse.')
 model_str = FLAGS.model
 name_str = FLAGS.name
 start_time = time.time()
-
+local_na_dir = join(settings.DATA_DIR, 'local', 'graph-{}'.format(settings.IDF_THRESH))
+cl = lmdb_utils.LMDBClient(settings.LMDB_LOCAL_EMB)
 
 def gae_for_na(name):
     """
@@ -138,6 +140,10 @@ def gae_for_na(name):
     emb = get_embs()
     n_clusters = len(set(labels))
     emb_norm = normalize_vectors(emb)
+
+    idx_features_labels = np.genfromtxt(join(local_na_dir, "{}_pubs_content.txt".format(name)), dtype=np.dtype(str))
+    cl.set_batch(idx_features_labels[:, -1], emb_norm)
+
     clusters_pred = clustering(emb_norm, num_clusters=n_clusters)
     prec, rec, f1 =  pairwise_precision_recall_f1(clusters_pred, labels)
     print('pairwise precision', '{:.5f}'.format(prec),

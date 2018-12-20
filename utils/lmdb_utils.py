@@ -35,8 +35,9 @@ class LMDBClient(object):
         with self.db.begin(write=True) as txn:
             txn.put(key.encode("utf-8"), data_utils.serialize_embedding(vector))
 
-    def set_batch(self, generator):
+    def set_batch(self, keys, vectors):
         with self.db.begin(write=True) as txn:
-            for key, vector in generator:
+            for i, key in enumerate(keys):
+                vector = vectors[i]
                 txn.put(key.encode("utf-8"), data_utils.serialize_embedding(vector))
                 print(key, self.get(key))

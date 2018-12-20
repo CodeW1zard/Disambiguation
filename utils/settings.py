@@ -34,6 +34,7 @@ CLUSTER_SIZE = join(OUT_DIR, 'n_clusters_rnn_' + SUFFIX + '.txt')
 LMDB_AUTHOR = 'pub_authors_' + SUFFIX + '.feature'
 LMDB_WORDVEC = 'pub_vectors_' + SUFFIX + '.feature'
 LMDB_GLOBALVEC = 'pub_globalvec_' + SUFFIX + '.feature'
+LMDB_LOCAL_EMB = 'pub_localvec_' + SUFFIX + '.feature'
 EMB_DIM = 100
 IDF_THRESH = 0.35
 
