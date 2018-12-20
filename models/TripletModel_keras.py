@@ -114,15 +114,22 @@ class TripletModel():
         wv_cl = LMDBClient(LMDB_WORDVEC)
         gb_cl = LMDBClient(LMDB_GLOBALVEC)
         values = []
+        nan_pids = []
         pids = []
         with wv_cl.db.begin() as txn:
             for pid, value in txn.cursor():
                 pids.append(pid.decode())
-                values.append(deserialize_embedding(value))
+                value = deserialize_embedding(value)
+                if np.isnan(value):
+                    nan_pids.append(pid)
+                    continue
+                values.append(value)
         values = np.stack(values)
         inter_embs = eval_utils.get_hidden_output(self.model, values)
         for i, pid in enumerate(pids):
             gb_cl.set(pid, inter_embs[i])
+        for pid in nan_pids:
+            gb_cl.set(pid, np.nan)
         print('generate global emb done!')
 
 class CustomDataset():
