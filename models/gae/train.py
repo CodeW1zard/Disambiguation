@@ -87,7 +87,6 @@ def gae_for_na(name):
     elif model_str == 'gcn_vae':
         model = GCNModelVAE(placeholders, input_feature_dim, num_nodes)
     pos_weight = float(adj.shape[0] * adj.shape[0] - adj.sum()) / adj.sum()  # negative edges/pos edges
-    print('positive edge weight', pos_weight)
     norm = adj.shape[0] * adj.shape[0] / float((adj.shape[0] * adj.shape[0] - adj.nnz) * 2)
 
     # Optimizer
@@ -142,7 +141,7 @@ def gae_for_na(name):
     emb_norm = normalize_vectors(emb)
 
     idx_features_labels = np.genfromtxt(join(local_na_dir, "{}_pubs_content.txt".format(name)), dtype=np.dtype(str))
-    cl.set_batch(idx_features_labels[:, -1], emb_norm)
+    cl.set_batch(idx_features_labels[:, 0], emb_norm)
 
     clusters_pred = clustering(emb_norm, num_clusters=n_clusters)
     prec, rec, f1 =  pairwise_precision_recall_f1(clusters_pred, labels)
