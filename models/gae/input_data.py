@@ -24,7 +24,14 @@ def load_local_data(path=local_na_dir, name='ke_xu'):
     idx = np.array(idx_features_labels[:, 0], dtype=np.str)
     idx_map = {j: i for i, j in enumerate(idx)}
     edges_unordered = np.genfromtxt(join(path, "{}_pubs_network.txt".format(name)), dtype=np.dtype(str))
+    select = [True] * edges_unordered.shape[0]
+    for i, nodes in enumerate(edges_unordered):
+        node1, node2 = nodes
+        if node1 not in idx_map.keys() or node2 not in idx_map.keys():
+            select[i] = False
+    edges_unordered = edges_unordered[select]
     edges = list(map(idx_map.get, edges_unordered.flatten()))
+    print(edges)
     edges = np.array(edges, dtype=np.int32).reshape(edges_unordered.shape)
     adj = sp.coo_matrix((np.ones(edges.shape[0]), (edges[:, 0], edges[:, 1])),
                         shape=(features.shape[0], features.shape[0]), dtype=np.float32)
@@ -37,7 +44,7 @@ def load_local_data(path=local_na_dir, name='ke_xu'):
     return adj, features, labels
 
 if __name__ == '__main__':
-    adj, features, labels = load_local_data(name='bing_chen')
+    adj, features, labels = load_local_data(name='c_c_wang')
     print(adj)
     print(features)
     print(labels)
