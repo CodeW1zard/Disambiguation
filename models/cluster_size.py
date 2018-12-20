@@ -53,14 +53,19 @@ def sampler(clusters, k=300, batch_size=10, min=1, max=300, flatten=False):
             else:
                 print("a")
                 v = lc.get(p)
-                if not v:
+                if v is not None:
                     x.append(v)
         if flatten:
             xs.append(np.sum(x, axis=0))
         else:
             xs.append(np.stack(x))
         ys.append(num_clusters)
-    return np.stack(xs), np.stack(ys)
+    try:
+        xs, ys = np.stack(xs), np.stack(ys)
+        return xs, ys
+    except:
+        print(xs)
+        return 0
 
 
 def gen_train(clusters, k=300, batch_size=1000, flatten=False):
@@ -87,13 +92,15 @@ def gen_test(k=300, flatten=False):
                 x.append(data_cache[p])
             else:
                 v = lc.get(p)
-                if not v:
+                if v is not None:
                     x.append(v)
         if flatten:
             xs.append(np.sum(x, axis=0))
         else:
             xs.append(np.stack(x))
         ys.append(num_clusters)
+    for x in xs:
+        print(x.shape)
     xs = np.stack(xs)
     ys = np.stack(ys)
     return names, xs, ys
@@ -110,7 +117,7 @@ def run_rnn(k=300, seed=1106):
             print(i, len(c), len(clusters))
         for pid in c:
             v = lc.get(pid)
-            if not v:
+            if v is not None:
                 data_cache[pid] = v
     model = create_model()
     # print(model.summary())
