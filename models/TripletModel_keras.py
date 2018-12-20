@@ -98,12 +98,12 @@ class TripletModel():
         negs = []
         for data in dataset:
             anchor, pos, neg = data
-            if np.isnan(anchor).any() or np.isnan(anchor).any() or np.isnan(anchor).any():
+            if np.isnan(anchor).any() or np.isnan(pos).any() or np.isnan(neg).any():
                 continue
             anchors.append(anchor)
             poss.append(pos)
             negs.append(neg)
-        rnds = np.random.permutation(len(dataset))
+        rnds = np.random.permutation(len(anchors))
         anchors = np.array(anchors)[rnds]
         poss = np.array(poss)[rnds]
         negs = np.array(negs)[rnds]
