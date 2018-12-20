@@ -52,7 +52,9 @@ def sampler(clusters, k=300, batch_size=10, min=1, max=300, flatten=False):
                 x.append(data_cache[p])
             else:
                 print("a")
-                x.append(lc.get(p))
+                v = lc.get(p)
+                if not v:
+                    x.append(v)
         if flatten:
             xs.append(np.sum(x, axis=0))
         else:
@@ -84,7 +86,9 @@ def gen_test(k=300, flatten=False):
             if p in data_cache:
                 x.append(data_cache[p])
             else:
-                x.append(lc.get(p))
+                v = lc.get(p)
+                if not v:
+                    x.append(v)
         if flatten:
             xs.append(np.sum(x, axis=0))
         else:
@@ -105,7 +109,9 @@ def run_rnn(k=300, seed=1106):
         if i % 100 == 0:
             print(i, len(c), len(clusters))
         for pid in c:
-            data_cache[pid] = lc.get(pid)
+            v = lc.get(pid)
+            if not v:
+                data_cache[pid] = v
     model = create_model()
     # print(model.summary())
     model.fit_generator(gen_train(clusters, k=300, batch_size=1000), steps_per_epoch=100, epochs=1000,
