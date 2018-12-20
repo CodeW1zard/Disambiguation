@@ -24,9 +24,9 @@ def root_mean_log_squared_error(y_true, y_pred):
     return K.sqrt(K.mean(K.square(first_log - second_log), axis=-1))
 
 
-def create_model():
+def create_model(k=300):
     model = Sequential()
-    model.add(Bidirectional(LSTM(64), input_shape=(300, 64)))
+    model.add(Bidirectional(LSTM(64), input_shape=(k, 64)))
     model.add(Dropout(0.5))
     model.add(Dense(1))
 
@@ -45,16 +45,22 @@ def sampler(clusters, k=300, batch_size=10, min=1, max=300, flatten=False):
         items = []
         for c in sampled_clusters:
             items.extend(clusters[c])
-        sampled_points = [items[p] for p in np.random.choice(len(items), k, replace=True)]
         x = []
-        for p in sampled_points:
-            if p in data_cache:
-                x.append(data_cache[p])
-            else:
-                print("a")
-                v = lc.get(p)
-                if not v:
-                    x.append(v)
+        sampled_points = []
+        while len(sampled_points) <= k:
+            p = np.random.choice(items)
+            emb = lc.get(p)
+            if emb is not None:
+                x.append(emb)
+        # sampled_points = [items[p] for p in np.random.choice(len(items), k, replace=True)]
+        # for p in sampled_points:
+        #     if p in data_cache:
+        #         x.append(data_cache[p])
+        #     else:
+        #         print("a")
+        #         v = lc.get(p)
+        #         if not v:
+        #             x.append(v)
         if flatten:
             xs.append(np.sum(x, axis=0))
         else:
@@ -68,8 +74,8 @@ def gen_train(clusters, k=300, batch_size=1000, flatten=False):
         yield sampler(clusters, k, batch_size, flatten=flatten)
 
 
-def gen_test(k=300, flatten=False):
-    name_to_pubs_test = data_utils.load_data(settings.BASIC_CLUSTER)
+def gen_test(name_to_pubs_test, k=300, flatten=False):
+    # name_to_pubs_test = data_utils.load_data(settings.BASIC_CLUSTER)
     pid_dict = data_utils.load_data(settings.PID_INDEX)
     xs, ys = [], []
     names = []
@@ -79,16 +85,22 @@ def gen_test(k=300, flatten=False):
         num_clusters = len(name_to_pubs_test[name])
         x = []
         items = list(chain.from_iterable(name_to_pubs_test[name]))
-        sampled_points = np.random.choice(items, k, replace=True)
-        sampled_points = [pid_index[ind] for ind in sampled_points]
-
-        for p in sampled_points:
-            if p in data_cache:
-                x.append(data_cache[p])
-            else:
-                v = lc.get(p)
-                if not v:
-                    x.append(v)
+        sampled_points = []
+        while len(sampled_points) <= k:
+            p = pid_index[np.random.choice(items)]
+            emb = lc.get(p)
+            if emb is not None:
+                x.append(emb)
+        # sampled_points = np.random.choice(items, k, replace=True)
+        # sampled_points = [pid_index[ind] for ind in sampled_points]
+        #
+        # for p in sampled_points:
+        #     if p in data_cache:
+        #         x.append(data_cache[p])
+        #     else:
+        #         v = lc.get(p)
+        #         if not v:
+        #             x.append(v)
         if flatten:
             xs.append(np.sum(x, axis=0))
         else:
@@ -99,22 +111,31 @@ def gen_test(k=300, flatten=False):
     return names, xs, ys
 
 
-def run_rnn(k=300, seed=1106):
-    name_to_pubs_train = data_utils.load_json(settings.ASSIGNMENT_JSON)
-    test_names, test_x, test_y = gen_test(k)
+def run_rnn(k=300, seed=1106, split=0.9):
     np.random.seed(seed)
-    clusters = list(chain.from_iterable(name_to_pubs_train.values()))
+    name_to_pubs = data_utils.load_json(settings.ASSIGNMENT_JSON)
+    names = list(name_to_pubs.keys())
+    num_train = int(len(names) * split)
+    names_train = names[:num_train]
+    name_to_pubs_test = dict((name, item) for name, item in name_to_pubs.items() if name not in names_train)
 
-    for i, c in enumerate(clusters):
-        if i % 100 == 0:
-            print(i, len(c), len(clusters))
-        for pid in c:
-            v = lc.get(pid)
-            if not v:
-                data_cache[pid] = v
-    model = create_model()
+    clusters = []
+    for name, pubs in name_to_pubs.items():
+        if name not in names_train:
+            continue
+        clusters.extend(pubs)
+    # for i, c in enumerate(clusters):
+    #     if i % 100 == 0:
+    #         print(i, len(c), len(clusters))
+    #     for pid in c:
+    #         v = lc.get(pid)
+    #         if not v:
+    #             data_cache[pid] = v
     # print(model.summary())
-    model.fit_generator(gen_train(clusters, k=300, batch_size=1000), steps_per_epoch=100, epochs=1000,
+
+    model = create_model(k=k)
+    test_names, test_x, test_y = gen_test(name_to_pubs_test, k=k)
+    model.fit_generator(gen_train(clusters, k=k, batch_size=1000), steps_per_epoch=100, epochs=1000,
                         validation_data=(test_x, test_y))
     kk = model.predict(test_x)
     wf = open(join(settings.CLUSTER_SIZE), 'w')
