@@ -147,7 +147,7 @@ def gae_for_na(name):
 
 
 def load_test_names():
-    with open(settings.TEST_NAME_LIST, 'r') as f:
+    with open(settings.NAME_LIST, 'r') as f:
         names = [name.split('\n')[0] for name in f]
     return names
 

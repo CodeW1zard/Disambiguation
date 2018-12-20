@@ -49,6 +49,7 @@ if __name__ == '__main__':
     idf_calc()
     model = EmbeddingModel()
     model.train(EMB_WORD2VEC, size=EMB_DIM)
+
     model.paper2vec()
 
 
