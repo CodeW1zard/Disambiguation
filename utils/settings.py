@@ -1,7 +1,7 @@
 import os
 from os.path import abspath, dirname, join
 ###########################
-SUFFIX = 'validate'
+SUFFIX = 'train'
 ###########################
 
 PROJ_DIR = join(abspath(dirname(__file__)), '..')
