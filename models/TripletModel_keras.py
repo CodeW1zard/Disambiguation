@@ -129,7 +129,7 @@ class TripletModel():
         for i, pid in enumerate(pids):
             gb_cl.set(pid, inter_embs[i])
         for pid in nan_pids:
-            gb_cl.set(pid, np.nan)
+            gb_cl.set(pid, None)
         print('generate global emb done!')
 
 class CustomDataset():
