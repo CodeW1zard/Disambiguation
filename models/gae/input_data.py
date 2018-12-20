@@ -23,8 +23,12 @@ def load_local_data(path=local_na_dir, name='ke_xu'):
     # build graph
     idx = np.array(idx_features_labels[:, 0], dtype=np.str)
     idx_map = {j: i for i, j in enumerate(idx)}
-    edges_unordered = np.genfromtxt(join(path, "{}_pubs_network.txt".format(name)), dtype=np.dtype(str))
-    edges = list(map(idx_map.get, edges_unordered.flatten()))
+    edges_unordered = np.genfromtxt(join(path, "{}_pubs_network.txt".format(name)), dtype=np.dtype(str)).ravel()
+    print(idx_map.keys())
+    for node in edges_unordered:
+        if node not in idx_map.keys():
+            print(node)
+    edges = list(map(idx_map.get, edges_unordered))
     edges = np.array(edges, dtype=np.int32).reshape(edges_unordered.shape)
     adj = sp.coo_matrix((np.ones(edges.shape[0]), (edges[:, 0], edges[:, 1])),
                         shape=(features.shape[0], features.shape[0]), dtype=np.float32)
