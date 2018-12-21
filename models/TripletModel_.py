@@ -158,7 +158,7 @@ class CustomDataset(torch.utils.data.Dataset):
 
 if __name__=='__main__':
     model = TripletModel()
-    # model.train(num_epoch=10)
+    model.train(num_epoch=10)
     # model.save()
-    model.load()
+    # model.load()
     model.evaluate()

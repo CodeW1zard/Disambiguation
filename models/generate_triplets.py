@@ -36,8 +36,9 @@ class TripletsGenerator():
                 if len(cluster) == 1:
                     continue
                 num_to_generate = max([6, 0.1 * len(cluster)])
-                num_to_generate = min([int(num_to_generate), 80, len(cluster)])
+                num_to_generate = min([int(num_to_generate), 80, len(cluster)-1])
                 for anchor in cluster:
+                    cluster = [pid for pid in cluster if pid != anchor]
                     pos = np.random.choice(cluster, num_to_generate, replace=False)
                     neg = self.get_neg_pairs(num_to_generate, excluded_pids)
                     tri = [(index2pid[anchor], index2pid[pos[i]], neg[i]) for i in range(num_to_generate) if i!=anchor]
