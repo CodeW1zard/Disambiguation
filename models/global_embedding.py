@@ -20,7 +20,7 @@ class EmbeddingModel():
                     print('word2vec:', cnt+1)
                     shuffle(author_feature)
                 data.append(author_feature)
-        self.model = Word2Vec(data, size=size, window=5, min_count=5, workers=10)
+        self.model = Word2Vec(data, size=size, window=5, min_count=5, workers=20)
         self.model.save(wfpath)
 
     def load(self, wfpath):

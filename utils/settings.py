@@ -1,7 +1,7 @@
 import os
 from os.path import abspath, dirname, join
 ###########################
-SUFFIX = 'validate'
+SUFFIX = 'train'
 IDF_THRESH = 0.35
 ###########################
 
