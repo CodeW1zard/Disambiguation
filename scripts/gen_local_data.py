@@ -30,8 +30,8 @@ def gen_local_data(idf_threshold=settings.IDF_THRESH):
             # if len(items) < 5:
             #     continue
             for index in items:
-                pids2label[pid_index[index]] = aid
-                pids.append(pid_index[index])
+                 pids2label[pid_index[index]] = aid
+                 pids.append(pid_index[index])
             # for pid in items:
             #     pids2label[pid] = aid
             #     pids.append(pid)

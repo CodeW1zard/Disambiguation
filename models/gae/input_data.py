@@ -4,7 +4,7 @@ import scipy.sparse as sp
 from utils import settings
 from utils.settings import IDF_THRESH
 
-local_na_dir = join(settings.DATA_DIR, 'local', 'graph-{}'.format(IDF_THRESH))
+local_na_dir = join(settings.DATA_DIR, 'local', 'graph-{}'.format(0.35))
 
 def encode_labels(labels):
     classes = set(labels)
@@ -31,7 +31,6 @@ def load_local_data(path=local_na_dir, name='ke_xu'):
             select[i] = False
     edges_unordered = edges_unordered[select]
     edges = list(map(idx_map.get, edges_unordered.flatten()))
-    print(edges)
     edges = np.array(edges, dtype=np.int32).reshape(edges_unordered.shape)
     adj = sp.coo_matrix((np.ones(edges.shape[0]), (edges[:, 0], edges[:, 1])),
                         shape=(features.shape[0], features.shape[0]), dtype=np.float32)
@@ -44,7 +43,7 @@ def load_local_data(path=local_na_dir, name='ke_xu'):
     return adj, features, labels
 
 if __name__ == '__main__':
-    adj, features, labels = load_local_data(name='c_c_wang')
+    adj, features, labels = load_local_data(name='li_ma')
     print(adj)
     print(features)
     print(labels)

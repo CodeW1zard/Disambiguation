@@ -1,5 +1,5 @@
 from keras import backend as K
-from keras.models import Model, load_model
+from keras.models import Model, model_from_json
 from keras.layers import Dense, Input, Lambda
 from keras.optimizers import Adam
 
@@ -83,7 +83,12 @@ class TripletModel():
         dump_data(self.model, GLOBAL_MODEL)
 
     def load(self):
-        self.model = load_data(GLOBAL_MODEL)
+        model_dir = join(OUT_DIR, 'model')
+        rf = open(join(model_dir, GLOBAL_MODEL_JSON), 'r')
+        model_json = rf.read()
+        rf.close()
+        self.model = model_from_json(model_json)
+        self.model.load_weights(join(model_dir, GLOBAL_MODEL_H5))
 
     def retrieve_data(self):
         dataset = CustomDataset()
@@ -142,4 +147,6 @@ class CustomDataset():
 
 if __name__=='__main__':
     model = TripletModel()
-    model.train_triplets_model(generate=True)
+    # model.train_triplets_model(generate=True)
+    model.load()
+    model.generate_global_emb()
