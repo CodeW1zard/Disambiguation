@@ -158,7 +158,7 @@ def load_test_names():
 
 def main():
     names = load_test_names()
-    wf = codecs.open(join(settings.OUT_DIR, 'local_clustering_results.csv'), 'w', encoding='utf-8')
+    wf = codecs.open(join(settings.OUT_DIR, 'local_clustering_results_%.2f.csv'%(settings.IDF_THRESH)), 'w', encoding='utf-8')
     wf.write('name, n_pubs, n_clusters, precision, recall, f1\n')
     metrics = np.zeros(3)
     cnt = 0

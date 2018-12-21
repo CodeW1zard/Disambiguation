@@ -25,11 +25,11 @@ PUBS_JSON = join(GLOBAL_DATA_DIR, 'pubs_' + SUFFIX + '.json')
 PUBS_PARQUET = join(GLOBAL_DATA_DIR, 'pubs_' + SUFFIX + '.parquet')
 PID_INDEX = join(GLOBAL_DATA_DIR, 'pid2index_' + SUFFIX + '.pkl')
 
-BASIC_NET = join(GLOBAL_DATA_DIR, 'basic_net_' + SUFFIX + '_%f'%(IDF_THRESH) +'.pkl')
-POS_PAIRS = join(GLOBAL_DATA_DIR, 'pos_pairs_' + SUFFIX + '_%f'%(IDF_THRESH) + '.txt')
-BASIC_CLUSTER = join(GLOBAL_DATA_DIR, 'basic_clusters_' + SUFFIX + '_%f'%(IDF_THRESH) + '.pkl')
-TRIPLET_INDEX = join(GLOBAL_DATA_DIR, 'triplet_index_' + SUFFIX + '_%f'%(IDF_THRESH) + '.pkl')
-GLOBAL_MODEL = join(OUT_DIR, 'global_model_' + SUFFIX + '_%f'%(IDF_THRESH) + '.h5')
+BASIC_NET = join(GLOBAL_DATA_DIR, 'basic_net_' + SUFFIX + '_%.2f'%(IDF_THRESH) +'.pkl')
+POS_PAIRS = join(GLOBAL_DATA_DIR, 'pos_pairs_' + SUFFIX + '_%.2f'%(IDF_THRESH) + '.txt')
+BASIC_CLUSTER = join(GLOBAL_DATA_DIR, 'basic_clusters_' + SUFFIX + '_%.2f'%(IDF_THRESH) + '.pkl')
+TRIPLET_INDEX = join(GLOBAL_DATA_DIR, 'triplet_index_' + SUFFIX + '_%.2f'%(IDF_THRESH) + '.pkl')
+GLOBAL_MODEL = join(OUT_DIR, 'global_model_' + SUFFIX + '_%.2f'%(IDF_THRESH) + '.h5')
 
 ASSIGNMENT_JSON = join(GLOBAL_DATA_DIR, 'assignment_' + SUFFIX + '.json')
 NAME_LIST = join(DATA_DIR, 'name_list_' + SUFFIX + '.txt')
@@ -37,8 +37,8 @@ CLUSTER_SIZE = join(OUT_DIR, 'n_clusters_rnn_' + SUFFIX + '.txt')
 
 LMDB_AUTHOR = 'pub_authors_' + SUFFIX + '.feature'
 LMDB_WORDVEC = 'pub_vectors_' + SUFFIX + '.feature'
-LMDB_GLOBALVEC = 'pub_globalvec_' + SUFFIX + '.feature'
-LMDB_LOCAL_EMB = 'pub_localvec_' + SUFFIX + '.feature'
+LMDB_GLOBALVEC = 'pub_globalvec_' + SUFFIX + '_%.2f' + '.feature'
+LMDB_LOCAL_EMB = 'pub_localvec_' + SUFFIX + '_%.2f' + '.feature'
 EMB_DIM = 100
 
 

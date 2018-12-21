@@ -11,7 +11,7 @@ import numpy as np
 
 class TripletModel():
 
-    def train_triplets_model(self, train_prop=0.8, generate=False):
+    def train_triplets_model(self, train_prop=0.85, generate=False):
         X1, X2, X3 = self.retrieve_data()
         n_triplets = len(X1)
         n_train = int(n_triplets * train_prop)
@@ -20,7 +20,7 @@ class TripletModel():
 
         X_anchor, X_pos, X_neg = X1[:n_train], X2[:n_train], X3[:n_train]
         X = {'anchor_input': X_anchor, 'pos_input': X_pos, 'neg_input': X_neg}
-        self.model.fit(X, np.ones((n_train, 2)), batch_size=64, epochs=5, shuffle=True, validation_split=0.2)
+        self.model.fit(X, np.ones((n_train, 2)), batch_size=64, epochs=15, shuffle=True, validation_split=0.1)
         self.model.save(GLOBAL_MODEL)
 
         test_triplets = (X1[n_train:], X2[n_train:], X3[n_train:])
@@ -28,12 +28,6 @@ class TripletModel():
 
         if generate:
             self.generate_global_emb()
-
-        # loaded_model = load_model(GLOBAL_MODEL)
-        # print('triplets model loaded')
-        #
-        # auc_score = eval_utils.full_auc(loaded_model, test_triplets)
-        # print('auc ', auc_score)
 
     def create_triplet_model(self):
         emb_anchor = Input(shape=(EMB_DIM, ), name='anchor_input')
