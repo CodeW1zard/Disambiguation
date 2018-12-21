@@ -37,8 +37,12 @@ class EmbeddingModel():
                 pid = paper[0].decode()
                 paper_features = deserialize_embedding(paper[1])
                 paper_features = [feature for feature in paper_features if feature in self.model.wv.vocab]
-                idfs = np.asarray([idf_dict[feature] for feature in paper_features])
-                vecs = np.asarray([self.model.wv[feature] for feature in paper_features]).transpose()
+                vecs = np.asarray([self.model.wv(feature, np.zeros(EMB_DIM)) for feature in paper_features]).transpose()
+                if not vecs.any():
+                    print('words of %s are all not in word2vec model vocab'%(pid))
+                    vec_lc.set(pid, None)
+                    continue
+                idfs = np.asarray([idf_dict.get(feature, 1) for feature in paper_features])
                 vec = vecs @ idfs/np.sum(idfs)
                 vec_lc.set(pid, vec)
 
@@ -49,7 +53,6 @@ if __name__ == '__main__':
     idf_calc()
     model = EmbeddingModel()
     model.train(EMB_WORD2VEC, size=EMB_DIM)
-
     model.paper2vec()
 
 
