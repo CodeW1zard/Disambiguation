@@ -22,7 +22,7 @@ def extract_common_features(item):
     keywords_features = []
     keywords = item.get("keywords")
     if keywords:
-        keywords_features = transform_feature([string_utils.clean_name(k) for k in keywords], 'keyword')
+        keywords_features = transform_feature([string_utils.clean_sentence(k) for k in keywords], 'keyword')
     venue_features = []
     venue_name = item.get('venue', '')
     if len(venue_name) > 2:
@@ -39,17 +39,18 @@ def extract_author_features(item):
         name = string_utils.clean_name(author.get('name', ''))
         name = transform_feature(name, 'name')
         org = string_utils.clean_name(author.get('org', ''))
+        org = org.replace(')', '').replace('(', '').replace(',', ' ')
         org = transform_feature(org, 'org')
         if name:
-            name_features.append(name[0])
+            name_features.extend(name)
         if org:
-            org_features.append(org[0])
+            org_features.extend(org)
 
-    title_features = ' '.join(title_features)
-    keywords_features = ' '.join(keywords_features)
-    venue_features = ' '.join(venue_features)
-    name_features = ' '.join(name_features)
-    org_features = ' '.join(org_features)
+    title_features = ' '.join(title_features) + ' '
+    keywords_features = ' '.join(keywords_features) + ' '
+    venue_features = ' '.join(venue_features) + ' '
+    name_features = ' '.join(name_features) + ' '
+    org_features = ' '.join(org_features) + ' '
 
     author_features = name_features + org_features + title_features + keywords_features + venue_features
     return author_features
