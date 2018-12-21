@@ -2,7 +2,7 @@ import os
 from os.path import abspath, dirname, join
 ###########################
 SUFFIX = 'train'
-IDF_THRESH = 0.35
+IDF_THRESH = 0.2
 ###########################
 
 PROJ_DIR = join(abspath(dirname(__file__)), '..')
