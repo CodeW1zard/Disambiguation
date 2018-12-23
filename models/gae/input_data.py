@@ -1,8 +1,7 @@
-from os.path import join
 import numpy as np
 import scipy.sparse as sp
+from os.path import join
 from utils import settings
-from utils.settings import IDF_THRESH
 
 local_na_dir = join(settings.DATA_DIR, 'local', 'graph-{}'.format(0.35))
 

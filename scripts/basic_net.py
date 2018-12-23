@@ -1,3 +1,4 @@
+import argparse
 import pandas as pd
 import numpy as np
 
@@ -9,6 +10,7 @@ from utils.settings import *
 from utils.data_utils import *
 from utils.lmdb_utils import LMDBClient
 from utils.string_utils import clean_name
+
 def match_author(x_list, y_list, name):
     return any(x in x_list for x in y_list if x != name)
 
@@ -27,7 +29,7 @@ def find_strong_pos_pairs(pub):
     pairs = np.asarray([(i, j) for i, j in combinations(range(num_paper), 2) if match(i, j)])
     return pairs
 
-def find_idf_pos_pairs(pub, idf, thresh=IDF_THRESH):
+def find_idf_pos_pairs(pub, idf, thresh=IDF_THRESH_HIGH):
     name = pub.loc[:, 'name'].values[0]
     name = clean_name(name)
     num_paper = pub.shape[0]
@@ -57,8 +59,8 @@ def find_idf_pos_pairs(pub, idf, thresh=IDF_THRESH):
         pairs = np.asarray(np.where(corr > thresh)).transpose()
     return pairs
 
-def prepare_clusters(wfpath):
-    pos_pairs = load_data(BASIC_NET)
+def prepare_clusters(rfpath, wfpath):
+    pos_pairs = load_data(rfpath)
     pubs = load_json(PUBS_JSON)
     components = {}
     for name, pairs in pos_pairs.items():
@@ -72,24 +74,43 @@ def prepare_clusters(wfpath):
     dump_data(components, wfpath)
 
 
-def prepare_pos_pairs(wfpath):
+def prepare_pos_pairs(rfpath, wfpath):
     pid_index_dict = load_data(PID_INDEX)
-    pos_pairs = load_data(BASIC_NET)
+    basic_net = load_data(rfpath)
     with open(wfpath, 'w') as f:
-        for name, pairs in pos_pairs.items():
+        for name, pairs in basic_net.items():
             pid_index = pid_index_dict[name]
             for i, j in pairs:
                 f.write(pid_index[i] + '\t' + pid_index[j] + '\n')
             print('prepare_pos_pairs', name, 'done')
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-m", "--mode", required=True, help="idf threshold, high or low", type=str)
+    args = parser.parse_args()
+    mode = args.mode
+
+    if mode == 'high':
+        idf_thresh = IDF_THRESH_HIGH
+        basic_net = BASIC_NET_HIGH
+        pos_pairs = POS_PAIRS_HIGH
+        basic_cluster = BASIC_CLUSTER_HIGH
+    elif mode == 'low':
+        idf_thresh = IDF_THRESH_LOW
+        basic_net = BASIC_NET_LOW
+        pos_pairs = POS_PAIRS_LOW
+        basic_cluster = BASIC_CLUSTER_LOW
+    else:
+        print('wrong mode!')
+        raise ValueError
+
     idf = load_data(WORD_IDF)
     pubs = pd.read_parquet(PUBS_PARQUET)
     pubs = dict(list(pubs.groupby('name')))
     pairs = {}
-    for name, pub in pubs.items():
+    for i, (name, pub) in enumerate(pubs.items()):
         pairs[name] = find_idf_pos_pairs(pub, idf)
-        print(name, 'done')
-    dump_data(pairs, BASIC_NET)
-    prepare_pos_pairs(POS_PAIRS)
-    prepare_clusters(BASIC_CLUSTER)
+        print(name, 'done', i)
+    dump_data(pairs, basic_net)
+    prepare_pos_pairs(basic_net, pos_pairs)
+    prepare_clusters(pos_pairs, basic_cluster)

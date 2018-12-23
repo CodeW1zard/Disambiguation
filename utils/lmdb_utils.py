@@ -34,10 +34,13 @@ class LMDBClient(object):
     def set(self, key, vector):
         with self.db.begin(write=True) as txn:
             txn.put(key.encode("utf-8"), data_utils.serialize_embedding(vector))
+        if vector is None:
+            print(key, 'corresponding vector is None when lmdb set value')
 
     def set_batch(self, keys, vectors):
         with self.db.begin(write=True) as txn:
             for i, key in enumerate(keys):
                 vector = vectors[i]
                 txn.put(key.encode("utf-8"), data_utils.serialize_embedding(vector))
-                print(key, self.get(key))
+                if vector is None:
+                    print(key, 'corresponding vector is None when lmdb set batch')

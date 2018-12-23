@@ -1,17 +1,13 @@
-from os.path import join
+import argparse
 import numpy as np
 import keras.backend as K
+from os.path import join
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, LSTM, Bidirectional
 from utils.lmdb_utils import LMDBClient
 from utils import data_utils
 from utils import settings
-
 from itertools import chain
-
-lc = LMDBClient(settings.LMDB_GLOBALVEC)
-
-data_cache = {}
 
 
 def root_mean_squared_error(y_true, y_pred):
@@ -70,7 +66,6 @@ def gen_train(clusters, k=300, batch_size=1000, flatten=False):
 
 
 def gen_test(name_to_pubs_test, k=300, flatten=False):
-    # name_to_pubs_test = data_utils.load_data(settings.BASIC_CLUSTER)
     pid_dict = data_utils.load_data(settings.PID_INDEX)
     xs, ys = [], []
     names = []
@@ -129,4 +124,16 @@ def run_rnn(k=300, seed=1106, split=0.9):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-m", "--mode", required=True, help="idf threshold, high or low", type=str)
+    args = parser.parse_args()
+    mode = args.mode
+    if mode == 'high':
+        lc = LMDBClient(settings.LMDB_GLOBALVEC_HIGH)
+    elif mode=='low':
+        lc = LMDBClient(settings.LMDB_GLOBALVEC_LOW)
+    else:
+        print('wrong mode error!')
+        raise ValueError
+    data_cache = {}
     run_rnn()

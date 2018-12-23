@@ -1,17 +1,19 @@
+import argparse
+import numpy as np
 from keras import backend as K
 from keras.models import Model, model_from_json
 from keras.layers import Dense, Input, Lambda
 from keras.optimizers import Adam
 
-from utils.settings import *
+from utils import settings
 from utils.data_utils import *
 from utils.lmdb_utils import LMDBClient
 from utils import eval_utils
-import numpy as np
+
 
 class TripletModel():
 
-    def train_triplets_model(self, train_prop=0.85, generate=False):
+    def train_triplets_model(self, train_prop=0.85):
         X1, X2, X3 = self.retrieve_data()
         n_triplets = len(X1)
         n_train = int(n_triplets * train_prop)
@@ -21,18 +23,15 @@ class TripletModel():
         X_anchor, X_pos, X_neg = X1[:n_train], X2[:n_train], X3[:n_train]
         X = {'anchor_input': X_anchor, 'pos_input': X_pos, 'neg_input': X_neg}
         self.model.fit(X, np.ones((n_train, 2)), batch_size=64, epochs=15, shuffle=True, validation_split=0.1)
-        self.model.save(GLOBAL_MODEL)
+
 
         test_triplets = (X1[n_train:], X2[n_train:], X3[n_train:])
         eval_utils.full_auc(self.model, test_triplets)
 
-        if generate:
-            self.generate_global_emb()
-
     def create_triplet_model(self):
-        emb_anchor = Input(shape=(EMB_DIM, ), name='anchor_input')
-        emb_pos = Input(shape=(EMB_DIM, ), name='pos_input')
-        emb_neg = Input(shape=(EMB_DIM, ), name='neg_input')
+        emb_anchor = Input(shape=(settings.EMB_DIM, ), name='anchor_input')
+        emb_pos = Input(shape=(settings.EMB_DIM, ), name='pos_input')
+        emb_neg = Input(shape=(settings.EMB_DIM, ), name='neg_input')
 
         # shared layers
         layer1 = Dense(128, activation='relu', name='first_emb_layer')
@@ -80,15 +79,17 @@ class TripletModel():
         return K.mean(y_pred[:, 0, 0] < y_pred[:, 1, 0])
 
     def save(self):
-        dump_data(self.model, GLOBAL_MODEL)
+        model_json = self.model.to_json()
+        with open(GLOBAL_MODEL_JSON, 'w') as wf:
+            wf.write(model_json)
+        self.model.save_weights(GLOBAL_MODEL_H5)
 
     def load(self):
-        model_dir = join(OUT_DIR, 'model')
-        rf = open(join(model_dir, GLOBAL_MODEL_JSON), 'r')
+        rf = open(GLOBAL_MODEL_JSON, 'r')
         model_json = rf.read()
         rf.close()
         self.model = model_from_json(model_json)
-        self.model.load_weights(join(model_dir, GLOBAL_MODEL_H5))
+        self.model.load_weights(GLOBAL_MODEL_H5)
 
     def retrieve_data(self):
         dataset = CustomDataset()
@@ -110,7 +111,7 @@ class TripletModel():
         return anchors, poss, negs
 
     def generate_global_emb(self):
-        wv_cl = LMDBClient(LMDB_WORDVEC)
+        wv_cl = LMDBClient(settings.LMDB_WORDVEC)
         gb_cl = LMDBClient(LMDB_GLOBALVEC)
         values = []
         nan_pids = []
@@ -134,7 +135,7 @@ class TripletModel():
 class CustomDataset():
     def __init__(self):
         self.triplets = load_data(TRIPLET_INDEX)
-        self.cl = LMDBClient(LMDB_WORDVEC)
+        self.cl = LMDBClient(settings.LMDB_WORDVEC)
 
     def __getitem__(self, index):
         triplet = self.triplets[index]
@@ -146,7 +147,26 @@ class CustomDataset():
         return len(self.triplets)
 
 if __name__=='__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-m", "--mode", required=True, help="idf threshold, high or low", type=str)
+    args = parser.parse_args()
+    mode = args.mode
+
+    if mode == 'high':
+        TRIPLET_INDEX = settings.TRIPLET_INDEX_HIGH
+        GLOBAL_MODEL_H5 = settings.GLOBAL_MODEL_H5_HIGH
+        GLOBAL_MODEL_JSON = settings.GLOBAL_MODEL_JSON_HIGH
+        LMDB_GLOBALVEC = settings.LMDB_GLOBALVEC_HIGH
+    elif mode == 'low':
+        TRIPLET_INDEX = settings.TRIPLET_INDEX_LOW
+        GLOBAL_MODEL_H5 = settings.GLOBAL_MODEL_H5_LOW
+        GLOBAL_MODEL_JSON = settings.GLOBAL_MODEL_JSON_LOW
+        LMDB_GLOBALVEC = settings.LMDB_GLOBALVEC_LOW
+    else:
+        print('wrong mode!')
+        raise ValueError
     model = TripletModel()
-    # model.train_triplets_model(generate=True)
-    model.load()
+    model.train_triplets_model()
+    model.save()
+    # model.load()
     model.generate_global_emb()

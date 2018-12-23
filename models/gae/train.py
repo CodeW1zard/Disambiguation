@@ -7,7 +7,7 @@ from os.path import join
 
 # Train on CPU (hide GPU) due to memory constraints
 os.environ['CUDA_VISIBLE_DEVICES'] = ""
-
+import argparse
 import codecs
 import tensorflow as tf
 import numpy as np
@@ -37,12 +37,6 @@ flags.DEFINE_string('model', 'gcn_vae', 'Model string.')
 flags.DEFINE_string('name', 'bing_chen', 'Dataset string.')
 # flags.DEFINE_integer('features', 1, 'Whether to use features (1) or not (0).')
 flags.DEFINE_integer('is_sparse', 0, 'Whether input features are sparse.')
-
-model_str = FLAGS.model
-name_str = FLAGS.name
-start_time = time.time()
-local_na_dir = join(settings.DATA_DIR, 'local', 'graph-{}'.format(settings.IDF_THRESH))
-cl = lmdb_utils.LMDBClient(settings.LMDB_LOCAL_EMB)
 
 def gae_for_na(name):
     """
@@ -119,7 +113,6 @@ def gae_for_na(name):
 
     # Train model
     for epoch in range(FLAGS.epochs):
-
         t = time.time()
         # Construct feed dictionary
         feed_dict = construct_feed_dict(adj_norm, adj_label, features, placeholders)
@@ -158,13 +151,13 @@ def load_test_names():
 
 def main():
     names = load_test_names()
-    wf = codecs.open(join(settings.OUT_DIR, 'local_clustering_results_%.2f.csv'%(settings.IDF_THRESH)), 'w', encoding='utf-8')
+    wf = codecs.open(join(settings.OUT_DIR, 'local_clustering_results_%.2f.csv'%(IDF_THRESH)), 'w', encoding='utf-8')
     wf.write('name, n_pubs, n_clusters, precision, recall, f1\n')
     metrics = np.zeros(3)
     cnt = 0
     for name in names:
         cur_metric, num_nodes, n_clusters = gae_for_na(name)
-        wf.write('{0},{1},{2},{3:.5f},{4:.5f},{5:.5f}\n'.format(
+        wf.write('{0}, {1}, {2}, {3:.5f}, {4:.5f}, {5:.5f}\n'.format(
             name, num_nodes, n_clusters, cur_metric[0], cur_metric[1], cur_metric[2]))
         wf.flush()
         for i, m in enumerate(cur_metric):
@@ -179,13 +172,29 @@ def main():
     macro_prec = metrics[0] / cnt
     macro_rec = metrics[1] / cnt
     macro_f1 = cal_f1(macro_prec, macro_rec)
-    wf.write('average,,,{0:.5f},{1:.5f},{2:.5f}\n'.format(
+    wf.write('average {0:.5f}  {1:.5f}  {2:.5f}\n'.format(
         macro_prec, macro_rec, macro_f1))
     wf.close()
 
 
 if __name__ == '__main__':
-    # gae_for_na('hongbin_liang')
-    # gae_for_na('j_yu')
-    # gae_for_na('s_yu')
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-m", "--mode", required=True, help="idf threshold, high or low", type=str)
+    args = parser.parse_args()
+    mode = args.mode
+
+    if mode == 'high':
+        IDF_THRESH = settings.IDF_THRESH_HIGH
+        LMDB_LOCAL_EMB = settings.LMDB_LOCAL_EMB_HIGH
+    elif mode == 'low':
+        IDF_THRESH = settings.LMDB_GLOBALVEC_LOW
+        LMDB_LOCAL_EMB = settings.LMDB_LOCAL_EMB_LOW
+    else:
+        print('wrong mode!')
+        raise ValueError
+    model_str = FLAGS.model
+    name_str = FLAGS.name
+    local_na_dir = join(settings.DATA_DIR, 'local', 'graph-{}'.format(IDF_THRESH))
+    cl = lmdb_utils.LMDBClient(LMDB_LOCAL_EMB)
+    start_time = time.time()
     main()

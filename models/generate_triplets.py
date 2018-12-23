@@ -1,13 +1,14 @@
+import argparse
 import numpy as np
-from utils.settings import *
+from utils import settings
 from utils.data_utils import *
 from utils.lmdb_utils import LMDBClient
 
 class TripletsGenerator():
     def __init__(self):
         self.clusters_dict = load_data(BASIC_CLUSTER)
-        self.pid_index = load_data(PID_INDEX)
-        self.wv_client = LMDBClient(LMDB_WORDVEC)
+        self.pid_index = load_data(settings.PID_INDEX)
+        self.wv_client = LMDBClient(settings.LMDB_WORDVEC)
         self.pid_total = []
         for _, pids in self.pid_index.items():
             self.pid_total.extend(pids)
@@ -39,6 +40,9 @@ class TripletsGenerator():
                 num_to_generate = min([int(num_to_generate), 30, len(cluster)-1])
                 for anchor in cluster:
                     cluster = [pid for pid in cluster if pid != anchor]
+                    if not cluster:
+                        continue
+                    num_to_generate = min(len(cluster), num_to_generate)
                     pos = np.random.choice(cluster, num_to_generate, replace=False)
                     neg = self.get_neg_pairs(num_to_generate, excluded_pids)
                     tri = [(index2pid[anchor], index2pid[pos[i]], neg[i]) for i in range(num_to_generate) if i!=anchor]
@@ -52,6 +56,19 @@ class TripletsGenerator():
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-m", "--mode", required=True, help="idf threshold, high or low", type=str)
+    args = parser.parse_args()
+    mode = args.mode
+    if mode == 'high':
+        BASIC_CLUSTER = settings.BASIC_NET_HIGH
+        TRIPLET_INDEX = settings.TRIPLET_INDEX_HIGH
+    elif mode=='low':
+        BASIC_CLUSTER = settings.BASIC_NET_LOW
+        TRIPLET_INDEX = settings.TRIPLET_INDEX_LOW
+    else:
+        print('wrong mode error!')
+        raise ValueError
     TG = TripletsGenerator()
     TG.prepare_triplet_pid(max_num=500000)
 
