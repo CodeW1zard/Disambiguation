@@ -5,7 +5,6 @@ from gensim.models import Word2Vec
 from utils.settings import *
 from utils.lmdb_utils import LMDBClient
 from utils.data_utils import *
-from utils.feature_utils import idf_calc
 class EmbeddingModel():
     def __init__(self):
         self.model = None
@@ -37,11 +36,10 @@ class EmbeddingModel():
                 pid = paper[0].decode()
                 paper_features = deserialize_embedding(paper[1])
                 paper_features = [feature for feature in paper_features if feature in self.model.wv.vocab]
-                vecs = np.asarray([self.model.wv.get(feature, np.zeros(EMB_DIM)) for feature in paper_features]).transpose()
-                if not vecs.any():
-                    print('words of %s are all not in word2vec model vocab'%(pid))
+                if not len(paper_features):
+                    print('words of %s are all not in word2vec model vocab' % (pid))
                     vec_lc.set(pid, None)
-                    continue
+                vecs = np.asarray([self.model.wv[feature] for feature in paper_features]).transpose()
                 idfs = np.asarray([idf_dict.get(feature, 1) for feature in paper_features])
                 vec = vecs @ idfs/np.sum(idfs)
                 vec_lc.set(pid, vec)
@@ -50,7 +48,10 @@ class EmbeddingModel():
 
 
 if __name__ == '__main__':
+<<<<<<< HEAD
 #    idf_calc()
+=======
+>>>>>>> f3ce90d7c9264ddd7de67fc930e72d0d0da5eba7
     model = EmbeddingModel()
     model.train(EMB_WORD2VEC, size=EMB_DIM)
     model.paper2vec()
