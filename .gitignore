@@ -2,6 +2,7 @@ data/emb
 data/global
 data/lmdb
 data/local
+data/na-data-kdd18
 
 .idea/
 .ipynb_checkpoints/
@@ -12,3 +13,4 @@ scripts/test.py
 out/
 
 models/gae/__pycache__
+test_kdd.py

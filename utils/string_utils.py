@@ -12,16 +12,17 @@ def stem(word):
     return stemmer.stem(word)
 
 
-def clean_sentence(text, stemming=False):
+def clean_sentence(text, stemming=False, join_str=' '):
     for token in punct:
         text = text.replace(token, "")
+    text = text.strip()
     words = text.split()
     if stemming:
         stemmed_words = []
         for w in words:
             stemmed_words.append(stem(w))
         words = stemmed_words
-    return " ".join(words)
+    return join_str.join(words).lower()
 
 
 def clean_name(name):
