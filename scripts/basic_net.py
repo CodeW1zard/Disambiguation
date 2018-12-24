@@ -5,8 +5,8 @@ import numpy as np
 from Graph.Graph import Graph
 from Graph.Algorithms import Connectivity
 
-from itertools import combinations
-from utils.settings import *
+from itertools import combinations, chain
+from utils import settings
 from utils.data_utils import *
 from utils.lmdb_utils import LMDBClient
 from utils.string_utils import clean_name
@@ -29,13 +29,13 @@ def find_strong_pos_pairs(pub):
     pairs = np.asarray([(i, j) for i, j in combinations(range(num_paper), 2) if match(i, j)])
     return pairs
 
-def find_idf_pos_pairs(pub, idf, thresh=IDF_THRESH_HIGH):
+def find_idf_pos_pairs(pub, idf, thresh):
     name = pub.loc[:, 'name'].values[0]
     name = clean_name(name)
     num_paper = pub.shape[0]
     corr = np.zeros((num_paper, num_paper))
     ids = pub.loc[:, 'id'].values
-    client = LMDBClient(LMDB_AUTHOR)
+    client = LMDBClient(settings.LMDB_AUTHOR)
     name = '__NAME__' + name
     with client.db.begin() as txn:
         papers = [0] * num_paper
@@ -61,8 +61,8 @@ def find_idf_pos_pairs(pub, idf, thresh=IDF_THRESH_HIGH):
 
 def prepare_clusters(rfpath, wfpath):
     basic_net = load_data(rfpath)
-    pid_dict = load_data(PID_INDEX)
-    pubs = load_json(PUBS_JSON)
+    pid_dict = load_data(settings.PID_INDEX)
+    pubs = load_json(settings.PUBS_JSON)
     components = {}
     for name, pairs in basic_net.items():
         pid_index = pid_dict[name]
@@ -75,9 +75,24 @@ def prepare_clusters(rfpath, wfpath):
         print('prepare clusters', name, 'done')
     dump_data(components, wfpath)
 
+def prepare_cluster_array(rfpath, wfpath):
+    clusters = load_data(rfpath)
+    names = []
+    values = []
+    authors = []
+    for i, (k, v) in enumerate(clusters.items()):
+        n = len(values)
+        values.extend(chain.from_iterable(v))
+        names.extend([k]*(len(values)-n))
+        authors.extend(chain.from_iterable([[i]*len(x) for i, x in enumerate(v)]))
+        if not (len(values) - n):
+            print(k, 'is empty!')
+    assignments = np.vstack([names, authors, values]).T
+    dump_data(assignments, wfpath)
+    print('prepare cluster array done')
 
 def prepare_pos_pairs(rfpath, wfpath):
-    pid_index_dict = load_data(PID_INDEX)
+    pid_index_dict = load_data(settings.PID_INDEX)
     basic_net = load_data(rfpath)
     with open(wfpath, 'w') as f:
         for name, pairs in basic_net.items():
@@ -93,26 +108,29 @@ if __name__ == '__main__':
     mode = args.mode
 
     if mode == 'high':
-        idf_thresh = IDF_THRESH_HIGH
-        basic_net = BASIC_NET_HIGH
-        pos_pairs = POS_PAIRS_HIGH
-        basic_cluster = BASIC_CLUSTER_HIGH
+        idf_thresh = settings.IDF_THRESH_HIGH
+        basic_net = settings.BASIC_NET_HIGH
+        pos_pairs = settings.POS_PAIRS_HIGH
+        basic_cluster = settings.BASIC_CLUSTER_HIGH
+        basic_cluster_array = settings.BASIC_CLUSTER_ARRAY_HIGH
     elif mode == 'low':
-        idf_thresh = IDF_THRESH_LOW
-        basic_net = BASIC_NET_LOW
-        pos_pairs = POS_PAIRS_LOW
-        basic_cluster = BASIC_CLUSTER_LOW
+        idf_thresh = settings.IDF_THRESH_LOW
+        basic_net = settings.BASIC_NET_LOW
+        pos_pairs = settings.POS_PAIRS_LOW
+        basic_cluster = settings.BASIC_CLUSTER_LOW
+        basic_cluster_array = settings.BASIC_CLUSTER_ARRAY_LOW
     else:
         print('wrong mode!')
         raise ValueError
 
-    idf = load_data(WORD_IDF)
-    pubs = pd.read_parquet(PUBS_PARQUET)
-    pubs = dict(list(pubs.groupby('name')))
-    pairs = {}
-    for i, (name, pub) in enumerate(pubs.items()):
-        pairs[name] = find_idf_pos_pairs(pub, idf)
-        print(name, 'done', i)
-    dump_data(pairs, basic_net)
-    prepare_pos_pairs(basic_net, pos_pairs)
-    prepare_clusters(basic_net, basic_cluster)
+    # idf = load_data(settings.WORD_IDF)
+    # pubs = pd.read_parquet(settings.PUBS_PARQUET)
+    # pubs = dict(list(pubs.groupby('name')))
+    # pairs = {}
+    # for i, (name, pub) in enumerate(pubs.items()):
+    #     pairs[name] = find_idf_pos_pairs(pub, idf)
+    #     print(name, 'done', i)
+    # dump_data(pairs, basic_net)
+    # prepare_pos_pairs(basic_net, pos_pairs)
+    # prepare_clusters(basic_net, basic_cluster)
+    prepare_cluster_array(basic_cluster, basic_cluster_array)

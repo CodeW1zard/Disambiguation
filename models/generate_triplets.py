@@ -1,17 +1,18 @@
 import argparse
 import numpy as np
+from itertools import chain
 from utils import settings
 from utils.data_utils import *
 from utils.lmdb_utils import LMDBClient
 
 class TripletsGenerator():
     def __init__(self):
-        self.clusters_dict = load_data(BASIC_CLUSTER)
+        self.clusters_dict_high = load_data(settings.BASIC_CLUSTER_HIGH)
+        self.clusters_dict_low = load_data(settings.BASIC_CLUSTER_LOW)
         self.pid_index = load_data(settings.PID_INDEX)
         self.wv_client = LMDBClient(settings.LMDB_WORDVEC)
-        self.pid_total = []
-        for _, pids in self.pid_index.items():
-            self.pid_total.extend(pids)
+        self.assignments_low = load_data(settings.BASIC_CLUSTER_ARRAY_LOW)
+        self.pid_total = list(chain.from_iterable(self.pid_index.values()))
         self.triplets = []
 
     def get_neg_pairs(self, num_to_generate, excluded_pids):
@@ -25,27 +26,25 @@ class TripletsGenerator():
         return negs
 
     def prepare_triplet_pid(self, max_num = 100000):
-        names = list(self.clusters_dict.keys())
+        names = list(self.clusters_dict_high.keys())
         np.random.shuffle(names)
         self.cnt = 0
         for i, name in enumerate(names):
             print('prepare triplet pid ', i, name)
-            clusters = self.clusters_dict[name]
-            index2pid = self.pid_index[name]
-            for cluster in clusters:
-                excluded_pids = [index2pid[index] for index in cluster]
-                if len(cluster) == 1:
+            clusters_high = self.clusters_dict_high[name]
+            assignment_low = self.assignments_low[self.assignments_low[:, 0]==name]
+            for cluster in clusters_high:
+                if len(cluster) <= 1:
                     continue
+                group = assignment_low[assignment_low[:, 2]==cluster[0]][0, 1]
+                excluded_pids = assignment_low[assignment_low[:, 1]==group]
+
                 num_to_generate = max([6, 0.1 * len(cluster)])
                 num_to_generate = min([int(num_to_generate), 30, len(cluster)-1])
                 for anchor in cluster:
-                    cluster = [pid for pid in cluster if pid != anchor]
-                    if not cluster:
-                        continue
-                    num_to_generate = min(len(cluster), num_to_generate)
                     pos = np.random.choice(cluster, num_to_generate, replace=False)
                     neg = self.get_neg_pairs(num_to_generate, excluded_pids)
-                    tri = [(index2pid[anchor], index2pid[pos[i]], neg[i]) for i in range(num_to_generate) if i!=anchor]
+                    tri = [(anchor, pos[i], neg[i]) for i in range(num_to_generate) if i != anchor]
                     self.cnt += len(tri)
                     self.triplets.extend(tri)
                     if self.cnt > max_num:
@@ -61,10 +60,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     mode = args.mode
     if mode == 'high':
-        BASIC_CLUSTER = settings.BASIC_CLUSTER_HIGH
         TRIPLET_INDEX = settings.TRIPLET_INDEX_HIGH
     elif mode=='low':
-        BASIC_CLUSTER = settings.BASIC_CLUSTER_LOW
         TRIPLET_INDEX = settings.TRIPLET_INDEX_LOW
     else:
         print('wrong mode error!')

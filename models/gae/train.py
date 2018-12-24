@@ -44,7 +44,7 @@ def gae_for_na(name):
     :param name:  author name
     :return: evaluation results
     """
-    adj, features, labels = load_local_data(name=name)
+    adj, features, labels = load_local_data(local_na_dir, name=name)
 
     # Store original adjacency matrix (without diagonal entries) for later
     adj_orig = adj
@@ -178,20 +178,21 @@ def main():
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--mode", required=True, help="idf threshold, high or low", type=str)
-    args = parser.parse_args()
-    mode = args.mode
-
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("-m", "--mode", required=True, help="idf threshold, high or low", type=str)
+    # args = parser.parse_args()
+    # mode = args.mode
+    mode = 'low'
     if mode == 'high':
         IDF_THRESH = settings.IDF_THRESH_HIGH
         LMDB_LOCAL_EMB = settings.LMDB_LOCAL_EMB_HIGH
     elif mode == 'low':
-        IDF_THRESH = settings.LMDB_GLOBALVEC_LOW
+        IDF_THRESH = settings.IDF_THRESH_LOW
         LMDB_LOCAL_EMB = settings.LMDB_LOCAL_EMB_LOW
     else:
         print('wrong mode!')
         raise ValueError
+
     model_str = FLAGS.model
     name_str = FLAGS.name
     local_na_dir = join(settings.DATA_DIR, 'local', 'graph-{}'.format(IDF_THRESH))

@@ -3,15 +3,13 @@ import scipy.sparse as sp
 from os.path import join
 from utils import settings
 
-local_na_dir = join(settings.DATA_DIR, 'local', 'graph-{}'.format(0.35))
-
 def encode_labels(labels):
     classes = set(labels)
     classes_dict = {c: i for i, c in enumerate(classes)}
     return list(map(lambda x: classes_dict[x], labels))
 
 
-def load_local_data(path=local_na_dir, name='ke_xu'):
+def load_local_data(path, name):
     # Load local paper network dataset
     print('Loading {} dataset...'.format(name), 'path=', path)
 
@@ -41,8 +39,3 @@ def load_local_data(path=local_na_dir, name='ke_xu'):
 
     return adj, features, labels
 
-if __name__ == '__main__':
-    adj, features, labels = load_local_data(name='li_ma')
-    print(adj)
-    print(features)
-    print(labels)
