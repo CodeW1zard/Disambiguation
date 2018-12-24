@@ -61,10 +61,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     mode = args.mode
     if mode == 'high':
-        BASIC_CLUSTER = settings.BASIC_NET_HIGH
+        BASIC_CLUSTER = settings.BASIC_CLUSTER_HIGH
         TRIPLET_INDEX = settings.TRIPLET_INDEX_HIGH
     elif mode=='low':
-        BASIC_CLUSTER = settings.BASIC_NET_LOW
+        BASIC_CLUSTER = settings.BASIC_CLUSTER_LOW
         TRIPLET_INDEX = settings.TRIPLET_INDEX_LOW
     else:
         print('wrong mode error!')

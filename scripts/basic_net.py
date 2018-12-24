@@ -60,16 +60,18 @@ def find_idf_pos_pairs(pub, idf, thresh=IDF_THRESH_HIGH):
     return pairs
 
 def prepare_clusters(rfpath, wfpath):
-    pos_pairs = load_data(rfpath)
+    basic_net = load_data(rfpath)
+    pid_dict = load_data(PID_INDEX)
     pubs = load_json(PUBS_JSON)
     components = {}
-    for name, pairs in pos_pairs.items():
+    for name, pairs in basic_net.items():
+        pid_index = pid_dict[name]
         num_papers = len(pubs[name])
         G = Graph()
         G.add_nodes_from(range(num_papers))
         G.add_edges_from(pairs)
         C = Connectivity(G)
-        components[name] = [compo for _, compo in C.connected_components().items()]
+        components[name] = [list(map(pid_index.get(), compo)) for compo in C.connected_components().values()]
         print('prepare clusters', name, 'done')
     dump_data(components, wfpath)
 
@@ -113,4 +115,4 @@ if __name__ == '__main__':
         print(name, 'done', i)
     dump_data(pairs, basic_net)
     prepare_pos_pairs(basic_net, pos_pairs)
-    prepare_clusters(pos_pairs, basic_cluster)
+    prepare_clusters(basic_net, basic_cluster)
