@@ -123,14 +123,14 @@ if __name__ == '__main__':
         print('wrong mode!')
         raise ValueError
 
-    # idf = load_data(settings.WORD_IDF)
-    # pubs = pd.read_parquet(settings.PUBS_PARQUET)
-    # pubs = dict(list(pubs.groupby('name')))
-    # pairs = {}
-    # for i, (name, pub) in enumerate(pubs.items()):
-    #     pairs[name] = find_idf_pos_pairs(pub, idf)
-    #     print(name, 'done', i)
-    # dump_data(pairs, basic_net)
-    # prepare_pos_pairs(basic_net, pos_pairs)
-    # prepare_clusters(basic_net, basic_cluster)
+    idf = load_data(settings.WORD_IDF)
+    pubs = pd.read_parquet(settings.PUBS_PARQUET)
+    pubs = dict(list(pubs.groupby('name')))
+    pairs = {}
+    for i, (name, pub) in enumerate(pubs.items()):
+        pairs[name] = find_idf_pos_pairs(pub, idf)
+        print(name, 'done', i)
+    dump_data(pairs, basic_net)
+    prepare_pos_pairs(basic_net, pos_pairs)
+    prepare_clusters(basic_net, basic_cluster)
     prepare_cluster_array(basic_cluster, basic_cluster_array)
