@@ -27,11 +27,6 @@ def gen_local_data(idf_threshold, global_vec, basic_net):
         # generate content
         wf_content = open(join(graph_dir, '{}_pubs_content.txt'.format(name)), 'w')
         for aid, items in enumerate(cur_person_dict):
-            # if len(items) < 5:
-            #     continue
-            # for index in items:
-            #      pids2label[pid_index[index]] = aid
-            #      pids.append(pid_index[index])
             for pid in items:
                 pids2label[pid] = aid
                 pids.append(pid)
@@ -56,21 +51,9 @@ def gen_local_data(idf_threshold, global_vec, basic_net):
         print('prepare local data', name, 'done')
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--mode", required=True, help="idf threshold, high or low", type=str)
-    args = parser.parse_args()
-    mode = args.mode
-    if mode == 'high':
-        idf_thresh = settings.IDF_THRESH_HIGH
-        basic_net = settings.BASIC_NET_HIGH
-        global_vec = settings.LMDB_GLOBALVEC_HIGH
-    elif mode=='low':
-        idf_thresh = settings.IDF_THRESH_LOW
-        basic_net = settings.BASIC_NET_LOW
-        global_vec = settings.LMDB_GLOBALVEC_HIGH
-    else:
-        print('wrong mode error!')
-        raise ValueError
+    idf_thresh = settings.IDF_THRESH_HIGH
+    basic_net = settings.BASIC_NET_HIGH
+    global_vec = settings.LMDB_GLOBALVEC
 
     gen_local_data(idf_threshold=idf_thresh, global_vec=global_vec, basic_net=basic_net)
     print('done')

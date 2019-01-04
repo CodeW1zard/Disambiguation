@@ -1,7 +1,6 @@
 import numpy as np
 import scipy.sparse as sp
 from os.path import join
-from utils import settings
 
 def encode_labels(labels):
     classes = set(labels)

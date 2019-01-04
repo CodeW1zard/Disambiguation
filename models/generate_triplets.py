@@ -48,24 +48,13 @@ class TripletsGenerator():
                     self.cnt += len(tri)
                     self.triplets.extend(tri)
                     if self.cnt > max_num:
-                        dump_data(self.triplets, TRIPLET_INDEX)
+                        dump_data(self.triplets, settings.TRIPLET_INDEX)
                         return
             print(self.cnt)
-        dump_data(self.triplets, TRIPLET_INDEX)
+        dump_data(self.triplets, settings.TRIPLET_INDEX)
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--mode", required=True, help="idf threshold, high or low", type=str)
-    args = parser.parse_args()
-    mode = args.mode
-    if mode == 'high':
-        TRIPLET_INDEX = settings.TRIPLET_INDEX_HIGH
-    elif mode=='low':
-        TRIPLET_INDEX = settings.TRIPLET_INDEX_LOW
-    else:
-        print('wrong mode error!')
-        raise ValueError
     TG = TripletsGenerator()
     TG.prepare_triplet_pid(max_num=500000)
 

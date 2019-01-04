@@ -1,4 +1,3 @@
-import argparse
 import numpy as np
 from keras import backend as K
 from keras.models import Model, model_from_json
@@ -72,7 +71,7 @@ class TripletModel():
         return K.sqrt(K.maximum(K.sum(K.square(x - y), axis=1, keepdims=True), K.epsilon()))
 
     def triplet_loss(self, _, y_pred):
-        margin = K.constant(1)
+        margin = K.constant(settings.MARGIN)
         return K.mean(K.maximum(K.constant(0), K.square(y_pred[:, 0, 0]) - K.square(y_pred[:, 1, 0]) + margin))
 
     def accuracy(self, _, y_pred):
@@ -80,16 +79,16 @@ class TripletModel():
 
     def save(self):
         model_json = self.model.to_json()
-        with open(GLOBAL_MODEL_JSON, 'w') as wf:
+        with open(settings.GLOBAL_MODEL_JSON, 'w') as wf:
             wf.write(model_json)
-        self.model.save_weights(GLOBAL_MODEL_H5)
+        self.model.save_weights(settings.GLOBAL_MODEL_H5)
 
     def load(self):
-        rf = open(GLOBAL_MODEL_JSON, 'r')
+        rf = open(settings.GLOBAL_MODEL_JSON, 'r')
         model_json = rf.read()
         rf.close()
         self.model = model_from_json(model_json)
-        self.model.load_weights(GLOBAL_MODEL_H5)
+        self.model.load_weights(settings.GLOBAL_MODEL_H5)
 
     def retrieve_data(self):
         dataset = CustomDataset()
@@ -112,7 +111,7 @@ class TripletModel():
 
     def generate_global_emb(self):
         wv_cl = LMDBClient(settings.LMDB_WORDVEC)
-        gb_cl = LMDBClient(LMDB_GLOBALVEC)
+        gb_cl = LMDBClient(settings.LMDB_GLOBALVEC)
         values = []
         nan_pids = []
         pids = []
@@ -134,7 +133,7 @@ class TripletModel():
 
 class CustomDataset():
     def __init__(self):
-        self.triplets = load_data(TRIPLET_INDEX)
+        self.triplets = load_data(settings.TRIPLET_INDEX)
         self.cl = LMDBClient(settings.LMDB_WORDVEC)
 
     def __getitem__(self, index):
@@ -147,24 +146,6 @@ class CustomDataset():
         return len(self.triplets)
 
 if __name__=='__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--mode", required=True, help="idf threshold, high or low", type=str)
-    args = parser.parse_args()
-    mode = args.mode
-
-    if mode == 'high':
-        TRIPLET_INDEX = settings.TRIPLET_INDEX_HIGH
-        GLOBAL_MODEL_H5 = settings.GLOBAL_MODEL_H5_HIGH
-        GLOBAL_MODEL_JSON = settings.GLOBAL_MODEL_JSON_HIGH
-        LMDB_GLOBALVEC = settings.LMDB_GLOBALVEC_HIGH
-    elif mode == 'low':
-        TRIPLET_INDEX = settings.TRIPLET_INDEX_LOW
-        GLOBAL_MODEL_H5 = settings.GLOBAL_MODEL_H5_LOW
-        GLOBAL_MODEL_JSON = settings.GLOBAL_MODEL_JSON_LOW
-        LMDB_GLOBALVEC = settings.LMDB_GLOBALVEC_LOW
-    else:
-        print('wrong mode!')
-        raise ValueError
     model = TripletModel()
     model.train_triplets_model()
     model.save()

@@ -7,7 +7,6 @@ from os.path import join
 
 # Train on CPU (hide GPU) due to memory constraints
 os.environ['CUDA_VISIBLE_DEVICES'] = ""
-import argparse
 import codecs
 import tensorflow as tf
 import numpy as np
@@ -178,21 +177,8 @@ def main():
 
 
 if __name__ == '__main__':
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("-m", "--mode", required=True, help="idf threshold, high or low", type=str)
-    # args = parser.parse_args()
-    # mode = args.mode
-    mode = 'low'
-    if mode == 'high':
-        IDF_THRESH = settings.IDF_THRESH_HIGH
-        LMDB_LOCAL_EMB = settings.LMDB_LOCAL_EMB_HIGH
-    elif mode == 'low':
-        IDF_THRESH = settings.IDF_THRESH_LOW
-        LMDB_LOCAL_EMB = settings.LMDB_LOCAL_EMB_LOW
-    else:
-        print('wrong mode!')
-        raise ValueError
-
+    IDF_THRESH = settings.IDF_THRESH_HIGH
+    LMDB_LOCAL_EMB = settings.LMDB_LOCAL_EMB
     model_str = FLAGS.model
     name_str = FLAGS.name
     local_na_dir = join(settings.DATA_DIR, 'local', 'graph-{}'.format(IDF_THRESH))
